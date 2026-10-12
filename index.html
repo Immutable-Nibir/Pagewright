@@ -1,0 +1,1931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#ffffff">
+<script>/* apply the saved theme before the page paints (no flash) */
+try{var t=JSON.parse(localStorage.getItem("pagewright_settings")).theme;if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+<title>Pagewright – Web Page Builder with Animations</title>
+<style>
+/* ===================== CUSTOMIZE HERE (colors) ===================== */
+:root{
+  --bg:#f3f4f7; --panel:#ffffff; --line:#d9dce3; --text:#1f2430; --muted:#6b7385;
+  --accent:#4f7cff; --work:#e4e7ee; --accent-soft:rgba(79,124,255,.14); --on-accent:#ffffff; --danger:#e05555;
+  accent-color:var(--accent); color-scheme:light dark;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+/* ===================== THEMES =====================
+   Every theme is one block of color variables. Pick one in Settings > Themes.
+   To add your own: copy a block below, change the id and the colors,
+   then add the same id and a name to the THEMES list in the script. */
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme]),:root[data-theme="auto"]{
+    --bg:#1b1d23;--panel:#252830;--line:#363a45;--text:#e6e8ee;--muted:#9097a8;--work:#14161a;--accent-soft:rgba(79,124,255,.2)}
+}
+[data-theme="light"]{color-scheme:light;--bg:#f3f4f7;--panel:#ffffff;--line:#d9dce3;--text:#1f2430;--muted:#6b7385;--accent:#4f7cff;--work:#e4e7ee;--accent-soft:rgba(79,124,255,.14);--on-accent:#ffffff;}
+[data-theme="paper"]{color-scheme:light;--bg:#f4eee3;--panel:#fffaf1;--line:#e0d5c3;--text:#2a2520;--muted:#8a7c68;--accent:#c2571a;--work:#e6dccb;--accent-soft:rgba(194,87,26,.14);--on-accent:#ffffff;--accent2:#2f6f6a;--guide:#2f6f6a;}
+[data-theme="dark"]{color-scheme:dark;--bg:#1b1d23;--panel:#252830;--line:#363a45;--text:#e6e8ee;--muted:#9097a8;--accent:#4f7cff;--work:#14161a;--accent-soft:rgba(79,124,255,.20);--on-accent:#ffffff;}
+[data-theme="deep"]{color-scheme:dark;--bg:#0c0d10;--panel:#131519;--line:#22252c;--text:#dde1e8;--muted:#79818f;--accent:#5b8cff;--work:#07080a;--accent-soft:rgba(91,140,255,.20);--on-accent:#ffffff;}
+[data-theme="space"]{color-scheme:dark;--bg:#000000;--panel:#06070b;--line:#181b26;--text:#e9edf7;--muted:#6c7590;--accent:#6c63ff;--work:#000000;--accent-soft:rgba(108,99,255,.22);--on-accent:#ffffff;--accent2:#22d3ee;--guide:#22d3ee;}
+[data-theme="skyblue"]{color-scheme:dark;--bg:#04060a;--panel:#0a0e14;--line:#15202b;--text:#e8f6ff;--muted:#7b95aa;--accent:#38bdf8;--work:#010203;--accent-soft:rgba(56,189,248,.18);--on-accent:#03121c;--accent2:#7dd3fc;--guide:#7dd3fc;}
+[data-theme="redblue"]{color-scheme:dark;--bg:#0e1120;--panel:#151a2e;--line:#283050;--text:#eceffb;--muted:#8a92b8;--accent:#3b82f6;--work:#090b17;--accent-soft:rgba(59,130,246,.20);--on-accent:#ffffff;--accent2:#ef4444;--guide:#ef4444;}
+[data-theme="midnight"]{color-scheme:dark;--bg:#0a111f;--panel:#101a2d;--line:#1e2e4b;--text:#e2ebfa;--muted:#7d93b6;--accent:#4da3ff;--work:#060b15;--accent-soft:rgba(77,163,255,.20);--on-accent:#04101f;}
+[data-theme="forest"]{color-scheme:dark;--bg:#0c1411;--panel:#121e19;--line:#223a2e;--text:#e3f1e9;--muted:#7da08c;--accent:#34d399;--work:#08100d;--accent-soft:rgba(52,211,153,.18);--on-accent:#03150d;--accent2:#a3e635;--guide:#a3e635;}
+[data-theme="ember"]{color-scheme:dark;--bg:#110c09;--panel:#1a130e;--line:#32251b;--text:#f5eadf;--muted:#a68d7a;--accent:#ff7a2f;--work:#0b0705;--accent-soft:rgba(255,122,47,.18);--on-accent:#1d0c02;--accent2:#fbbf24;--guide:#fbbf24;}
+[data-theme="violet"]{color-scheme:dark;--bg:#120e1e;--panel:#1a1430;--line:#30264b;--text:#efe9fb;--muted:#9889c0;--accent:#a78bfa;--work:#0b0815;--accent-soft:rgba(167,139,250,.20);--on-accent:#170b33;--accent2:#f472b6;--guide:#f472b6;}
+/* ================================================================== */
+
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);
+  overflow:hidden;overscroll-behavior:none;
+  -webkit-user-select:none;user-select:none}
+/* The root font size is what the "Interface size" setting changes: everything in the editor UI is in rem */
+html{scroll-padding-top:env(safe-area-inset-top,0px);font-size:16px}
+body{font:0.8125rem/1.3 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+
+/* ========== LAYOUTS ==========
+   The editor is a grid with named areas. Four layouts: classic, compact, dock, focus.
+   The script puts these classes on #app: layout-<name>, bar-classic / bar-compact (where the property
+   controls live), panel-left, mobile, sheet-bottom / sheet-side (panel is a pop-up), sheet-open. */
+#app{height:100%;display:grid;grid-template-rows:auto 1fr auto;--panelw:min(15rem,45vw);--dockh:min(15rem,38vh)}
+#top{grid-area:top}
+#tools{grid-area:tools}
+#ws{grid-area:ws;min-width:0;min-height:0}
+#nodes{grid-area:nodes}
+#bottom{grid-area:bottom}
+
+/* Property controls live in the top bar (classic) or in the panel (every other layout, and on phones) */
+#app.bar-classic .compact-only{display:none !important}
+#app.bar-compact .classic-only{display:none !important}
+
+/* 1) Classic: left tools | workspace | side panel */
+#app.layout-classic{grid-template-columns:3rem 1fr var(--panelw);
+  grid-template-areas:"top top top" "tools ws nodes" "bottom bottom bottom"}
+#app.layout-classic.panel-left{grid-template-columns:3rem var(--panelw) 1fr;
+  grid-template-areas:"top top top" "tools nodes ws" "bottom bottom bottom"}
+#app.layout-classic #toolsCompact{display:none}
+
+/* 2) Compact (Blender-like): everything in the side panel */
+#app.layout-compact{--panelw:min(18.75rem,50vw);grid-template-columns:1fr var(--panelw);
+  grid-template-areas:"top top" "ws nodes" "bottom bottom"}
+#app.layout-compact.panel-left{grid-template-columns:var(--panelw) 1fr;
+  grid-template-areas:"top top" "nodes ws" "bottom bottom"}
+#app.layout-compact #tools{display:none}
+#app.layout-compact #toolsCompact{display:flex}
+
+/* 3) Dock: scene list + properties in a wide strip along the bottom */
+#app.layout-dock{grid-template-columns:3rem 1fr;grid-template-rows:auto minmax(0,1fr) auto auto;
+  grid-template-areas:"top top" "tools ws" "nodes nodes" "bottom bottom"}
+#app.layout-dock #toolsCompact{display:none}
+#app.layout-dock #nodes{display:grid;grid-template-columns:min(14rem,36vw) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);
+  grid-template-areas:"h1 h2" "list props";height:var(--dockh);border-left:none;border-top:1px solid var(--line)}
+#app.layout-dock #sceneHeader{grid-area:h1;cursor:default}
+#app.layout-dock #propsHeader{grid-area:h2}
+#app.layout-dock #nodeList{grid-area:list;border-right:1px solid var(--line)}
+#app.layout-dock #nodeProps{grid-area:props;flex-direction:row;align-items:flex-start;gap:1rem;max-height:none;overflow:auto;border-top:none}
+#app.layout-dock #nodeProps .prop-block{flex:0 0 13rem;border-bottom:none;border-right:1px solid var(--line);padding-right:1rem;margin-bottom:0}
+#app.layout-dock #nodeProps .prop-block:last-child{border-right:none}
+
+/* 4) Focus: only tools + page. Scene and properties slide in when you press "Panel" */
+#app.layout-focus{grid-template-columns:3rem 1fr;grid-template-areas:"top top" "tools ws" "bottom bottom"}
+#app.layout-focus #toolsCompact{display:none}
+
+#top{display:flex;gap:0.5rem;align-items:center;padding:0.375rem 0.5rem;background:var(--panel);
+  border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap}
+#tools{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;
+  align-items:center;gap:0.375rem;padding:0.5rem 0}
+#ws{position:relative;overflow:hidden;background:var(--work);touch-action:none;cursor:default}
+#nodes{background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden;min-width:0}
+#bottom{display:flex;gap:0.5rem;align-items:center;padding:0.375rem 0.5rem;background:var(--panel);
+  border-top:1px solid var(--line);overflow-x:auto;white-space:nowrap}
+
+button,input,select{font:inherit;color:var(--text)}
+button{background:transparent;border:1px solid var(--line);border-radius:0.375rem;padding:0.3125rem 0.5625rem;cursor:pointer}
+button:hover{border-color:var(--accent2,var(--accent))}
+button.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+button:disabled,input:disabled,select:disabled{opacity:.4;cursor:default}
+#tools button,#toolsCompact button{width:2.25rem;height:2.25rem;padding:0;font-size:1rem}
+#toolsCompact{flex-direction:row;flex-wrap:wrap;gap:0.25rem;padding:0.5rem;border-bottom:1px solid var(--line);justify-content:center}
+input[type=text],input[type=number],select{background:var(--bg);border:1px solid var(--line);border-radius:0.375rem;padding:0.3125rem 0.4375rem;min-width:0}
+input[type=color]{width:1.875rem;height:1.75rem;padding:0;border:1px solid var(--line);border-radius:0.375rem;background:none}
+label{color:var(--muted);display:flex;align-items:center;gap:0.25rem}
+.sep{width:1px;align-self:stretch;background:var(--line)}
+.sp{flex:1}
+
+/* Right panel – Scene / Outliner */
+.panel-header{padding:0.5rem 0.625rem;font-weight:600;font-size:0.75rem;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--muted);border-bottom:1px solid var(--line);background:var(--bg);flex-shrink:0}
+#nodeList{flex:1;overflow-y:auto;padding:0.25rem 0;min-height:3.75rem}
+.node-item{display:flex;align-items:center;gap:0.375rem;padding:0.3125rem 0.625rem;cursor:pointer;border-left:3px solid transparent;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.node-item:hover{background:var(--bg)}
+.node-item.sel{background:var(--accent-soft);border-left-color:var(--accent)}
+.node-item.hidden-node{opacity:.45}
+.node-icon{width:1.125rem;text-align:center;flex-shrink:0;font-size:0.875rem}
+.node-label{overflow:hidden;text-overflow:ellipsis}
+#nodeProps{padding:0.5rem 0.625rem;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:0.4375rem;flex-shrink:0;overflow-y:auto;max-height:55%}
+#nodeProps label{justify-content:space-between}
+#nodeProps input[type=number]{width:4rem}
+#nodeProps input[type=text]{flex:1;min-width:0}
+#nodeProps .row{display:flex;gap:0.375rem;align-items:center}
+#nodeProps .row label{flex:1}
+#nodeProps .zbtns{display:flex;gap:0.25rem}
+#nodeProps .zbtns button{flex:1;padding:0.25rem 0;font-size:0.75rem}
+#nodeProps .prop-block{display:flex;flex-direction:column;gap:0.375rem;padding-bottom:0.375rem;border-bottom:1px solid var(--line);margin-bottom:2px}
+#nodeProps .prop-block:last-child{border-bottom:none;padding-bottom:0}
+
+/* The page being designed */
+#page{position:absolute;left:0;top:0;transform-origin:0 0;box-shadow:0 2px 0.875rem rgba(0,0,0,.25);overflow:hidden}
+.item{position:absolute;box-sizing:border-box;overflow:hidden;line-height:1.3}
+.item.button{display:flex;align-items:center;justify-content:center;text-align:center;font-weight:600}
+.item.text{white-space:pre-wrap}
+.item img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.edit .item{cursor:move}
+.edit .item.sel{outline:2px solid var(--accent);overflow:visible}
+.handle{position:absolute;right:calc(var(--hb,.875rem) * var(--inv,1) / -2);bottom:calc(var(--hb,.875rem) * var(--inv,1) / -2);
+  width:calc(var(--hb,.875rem) * var(--inv,1));height:calc(var(--hb,.875rem) * var(--inv,1));background:var(--accent2,var(--accent));
+  border:2px solid #fff;border-radius:3px;cursor:nwse-resize}
+
+/* Animation Keyframes */
+@keyframes anim-fade { 0% { opacity:0; } 100% { opacity:1; } }
+@keyframes anim-slide { 0% { transform:translateY(30px); opacity:0; } 100% { transform:translateY(0); opacity:1; } }
+@keyframes anim-zoom { 0% { transform:scale(0.7); opacity:0; } 100% { transform:scale(1); opacity:1; } }
+@keyframes anim-bounce { 0%, 100% { transform:translateY(0); } 50% { transform:translateY(-18px); } }
+@keyframes anim-pulse { 0%, 100% { transform:scale(1); } 50% { transform:scale(1.08); } }
+@keyframes anim-rotate { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
+
+/* Context menu */
+#ctx{
+  position:fixed; z-index:9999; min-width:11.25rem; padding:0.25rem 0;
+  background:var(--panel); border:1px solid var(--line); border-radius:0.5rem;
+  box-shadow:0 0.5rem 1.75rem rgba(0,0,0,.22); display:none;
+  font-size:0.8125rem; user-select:none;
+}
+#ctx.open{display:block}
+.ctx-item{
+  display:flex; align-items:center; gap:0.625rem; padding:0.4375rem 0.875rem; cursor:pointer;
+  color:var(--text); white-space:nowrap;
+}
+.ctx-item:hover{background:var(--accent-soft)}
+.ctx-item.disabled{opacity:.35; pointer-events:none}
+.ctx-item .k{margin-left:auto; color:var(--muted); font-size:0.6875rem}
+.ctx-sep{height:1px; background:var(--line); margin:0.25rem 0}
+.ctx-item.danger{color:var(--danger)}
+.ctx-item.danger:hover{background:rgba(224,85,85,.12)}
+
+/* Settings modal */
+#settingsOverlay{
+  position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.45);
+  display:none; align-items:center; justify-content:center; padding:1.25rem;
+}
+#settingsOverlay.open{display:flex}
+#settingsBox{
+  background:var(--panel); border:1px solid var(--line); border-radius:0.75rem;
+  width:min(35rem,100%); max-height:min(80vh,40rem); display:flex; flex-direction:column;
+  box-shadow:0 1rem 3rem rgba(0,0,0,.3); overflow:hidden;
+}
+#settingsBox h2{margin:0;padding:0.875rem 1.125rem;font-size:1rem;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:0.5rem}
+#settingsBox h2 .sp{flex:1}
+#settingsBody{padding:1rem 1.125rem;overflow-y:auto;flex:1}
+#settingsBody h3{margin:0 0 0.625rem;font-size:0.8125rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+#settingsBody section{margin-bottom:1.375rem}
+.layout-cards{display:flex;gap:0.75rem;flex-wrap:wrap}
+.layout-card{
+  flex:1; min-width:8.75rem; border:2px solid var(--line); border-radius:0.625rem; padding:0.75rem;
+  cursor:pointer; background:var(--bg); transition:border-color .15s;
+}
+.layout-card:hover{border-color:var(--accent)}
+.layout-card.active{border-color:var(--accent); background:var(--accent-soft)}
+.layout-card strong{display:block;margin-bottom:0.25rem}
+.layout-card span{font-size:0.75rem;color:var(--muted);line-height:1.35}
+.sc-table{width:100%;border-collapse:collapse;font-size:0.8125rem}
+.sc-table th{text-align:left;padding:0.375rem 0.5rem;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line)}
+.sc-table td{padding:0.375rem 0.5rem;border-bottom:1px solid var(--line)}
+.sc-table tr:last-child td{border-bottom:none}
+.sc-key{
+  display:inline-block; min-width:4.5rem; text-align:center; padding:3px 0.5rem;
+  background:var(--bg); border:1px solid var(--line); border-radius:0.3125rem; cursor:pointer;
+  font-family:ui-monospace,monospace; font-size:0.75rem;
+}
+.sc-key:hover{border-color:var(--accent)}
+.sc-key.listening{border-color:var(--accent); background:var(--accent-soft); animation:pulse-border 1s infinite}
+@keyframes pulse-border{50%{opacity:.7}}
+#settingsFooter{padding:0.75rem 1.125rem;border-top:1px solid var(--line);display:flex;gap:0.5rem;justify-content:flex-end}
+
+/* ===== Quality-of-life additions ===== */
+input,select{-webkit-user-select:text;user-select:text}
+/* Grid + snap guides live in one overlay on top of the page (editor only) */
+#guides{position:absolute;inset:0;pointer-events:none;z-index:50}
+#gridLayer{position:absolute;inset:0;display:none;
+  background-image:linear-gradient(to right,rgba(128,128,128,.28) 1px,transparent 1px),
+                   linear-gradient(to bottom,rgba(128,128,128,.28) 1px,transparent 1px)}
+.guide{position:absolute;display:none}
+#guideV{top:0;bottom:0}
+#guideH{left:0;right:0}
+.edit .item.locked{cursor:not-allowed}
+.edit .item.sel.locked{outline-style:dashed}
+/* Scene list: hide / lock icons */
+.node-label{flex:1;min-width:0}
+.ni-tools{display:flex;gap:2px;flex-shrink:0;margin-left:auto}
+.ni-btn{opacity:.25;cursor:pointer;padding:0 3px;font-size:0.75rem}
+.ni-btn.active{opacity:.9}
+.node-item:hover .ni-btn{opacity:.6}
+.node-item:hover .ni-btn.active{opacity:1}
+/* Align buttons */
+.al-row{display:flex;gap:0.25rem}
+.al-row button{flex:1;padding:0.25rem 0;font-size:0.8125rem}
+/* Small message that fades out */
+#toast{position:fixed;left:50%;bottom:3.75rem;transform:translateX(-50%);background:var(--text);color:var(--bg);
+  padding:0.4375rem 0.875rem;border-radius:1.25rem;font-size:0.75rem;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10001}
+#toast.show{opacity:.92}
+#settingsBody .chk{color:var(--text);margin-bottom:.5rem}
+
+/* ===== Interface size, movable side panel, phone layout ===== */
+button,input,select{touch-action:manipulation}
+#app>*{min-width:0}
+#app.panel-left #nodes{border-left:none;border-right:1px solid var(--line)}
+#sceneHeader{display:flex;align-items:center;gap:.5rem;cursor:grab;touch-action:none}
+#sceneHeader:active{cursor:grabbing}
+#panelGrip{opacity:.6;letter-spacing:0}
+.hdr-btn{padding:.1rem .45rem;font-size:.75rem;line-height:1.2}
+/* Shows where the panel will land while you drag it */
+#dropHint{position:fixed;top:0;bottom:0;z-index:9000;display:none;pointer-events:none;box-sizing:border-box;
+  background:var(--accent-soft);border:2px dashed var(--accent)}
+.side-card{flex:1;min-width:8rem;border:2px solid var(--line);border-radius:.625rem;padding:.75rem;cursor:pointer;
+  background:var(--bg);text-align:center;transition:border-color .15s}
+.side-card:hover{border-color:var(--accent)}
+.side-card.active{border-color:var(--accent);background:var(--accent-soft)}
+.sheet-only{display:none}
+/* Touch screens: bigger grab handle and easier list rows */
+@media (pointer:coarse){
+  #page{--hb:1.5rem}
+  .ni-btn{opacity:.55;padding:.25rem .5rem;font-size:1rem}
+  .node-item{padding-top:.5rem;padding-bottom:.5rem}
+  .ctx-item{padding-top:.6rem;padding-bottom:.6rem}
+}
+#pFont,#cFont{max-width:9rem}
+/* Theme cards in Settings */
+.theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(7.5rem,1fr));gap:.625rem}
+.theme-card{border:2px solid var(--line);border-radius:.625rem;padding:.4rem;cursor:pointer;background:var(--bg);
+  text-align:center;font-size:.75rem;color:var(--text);transition:border-color .15s}
+.theme-card:hover{border-color:var(--accent2,var(--accent))}
+.theme-card.active{border-color:var(--accent);background:var(--accent-soft)}
+.theme-prev{display:flex;height:3.25rem;border-radius:.4rem;overflow:hidden;background:var(--work);
+  border:1px solid var(--line);margin-bottom:.35rem}
+.theme-prev .half{flex:1;display:flex;min-width:0;background:var(--work)}
+.theme-prev .half .tp-panel{display:none}
+.theme-prev i{display:block;font-style:normal}
+.tp-tools{width:.7rem;background:var(--panel);border-right:1px solid var(--line)}
+.tp-ws{flex:1;position:relative}
+.tp-panel{width:1.3rem;background:var(--panel);border-left:1px solid var(--line)}
+.tp-item{position:absolute;left:.4rem;top:.45rem;width:1.7rem;height:.55rem;border-radius:.15rem;background:var(--accent)}
+.tp-btn{position:absolute;left:.4rem;top:1.4rem;width:1rem;height:.45rem;border-radius:.15rem;background:var(--accent2,var(--accent))}
+/* ===== Settings window: pages (tabs) ===== */
+#settingsBox{width:min(46rem,100%);height:min(80vh,36rem);max-height:none}
+#settingsMain{display:flex;flex:1;min-height:0}
+#settingsTabs{display:flex;flex-direction:column;gap:.25rem;padding:.75rem;width:9.5rem;flex-shrink:0;
+  border-right:1px solid var(--line);background:var(--bg);overflow-y:auto}
+#settingsTabs button{text-align:left;border-color:transparent;padding:.5rem .75rem;border-radius:.5rem;white-space:nowrap}
+#settingsTabs button:hover{border-color:var(--line)}
+#settingsTabs button span{display:inline-block;width:1.2rem;text-align:center;opacity:.85}
+#settingsBody{min-width:0}
+#settingsBody [data-page]{display:none}
+#settingsBody [data-page].active{display:block}
+@media (max-width:640px){
+  #settingsMain{flex-direction:column}
+  #settingsTabs{flex-direction:row;width:auto;border-right:none;border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;padding:.5rem}
+  #settingsTabs button{flex:0 0 auto}
+}
+.about-logo{width:3.5rem;height:3.5rem;border-radius:.9rem;display:grid;place-items:center;font-size:1.6rem;font-weight:800;
+  color:var(--on-accent);background:linear-gradient(135deg,var(--accent),var(--accent2,var(--accent)))}
+.about-name{font-size:1.5rem;font-weight:700;color:var(--text)}
+.about-card{border:1px solid var(--line);border-radius:.75rem;padding:.25rem 1rem;background:var(--bg)}
+.about-row{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.65rem 0;border-bottom:1px solid var(--line);color:var(--muted)}
+.about-row:last-child{border-bottom:none}
+.about-row strong{color:var(--text)}
+/* Phone / small window ("mobile" is set by the script): bigger touch targets, no mouse hints */
+#app.sheet-bottom .sheet-only,#app.sheet-side .sheet-only{display:inline-block}
+#app.mobile #hint,#app.mobile #bUndo,#app.mobile #bRedo{display:none}
+#app.sheet-bottom #panelFlip,#app.sheet-bottom #panelGrip,#app.layout-dock #panelFlip,#app.layout-dock #panelGrip{display:none}
+#app.mobile #toolsCompact{display:none}
+#app.mobile #bSettings{order:-1}
+#app.mobile button{min-height:2.5rem}
+#app.mobile #tools button{width:2.5rem;height:2.5rem}
+#app.mobile input[type=text],#app.mobile input[type=number],#app.mobile select{min-height:2.25rem;font-size:1rem}
+#app.mobile input[type=checkbox]{width:1.25rem;height:1.25rem}
+/* Phone versions of each layout */
+#app.mobile.layout-classic{grid-template-columns:3rem 1fr;grid-template-areas:"top top" "tools ws" "bottom bottom"}
+#app.mobile.layout-compact{grid-template-columns:1fr;grid-template-rows:auto auto minmax(0,1fr) auto;
+  grid-template-areas:"top" "tools" "ws" "bottom"}
+#app.mobile.layout-compact #tools{display:flex;flex-direction:row;justify-content:center;gap:.5rem;padding:.25rem;
+  border-right:none;border-bottom:1px solid var(--line)}
+#app.mobile.layout-dock{--dockh:min(15rem,42vh)}
+#app.mobile.layout-dock #nodes{grid-template-columns:min(8.5rem,32vw) minmax(0,1fr)}
+/* Bottom sheet (Classic and Compact on phones) */
+#app.sheet-bottom #nodes{position:fixed;left:0;right:0;bottom:0;width:auto;height:min(50vh,26rem);z-index:900;
+  border:none;border-top:1px solid var(--line);border-radius:.75rem .75rem 0 0;box-shadow:0 -6px 24px rgba(0,0,0,.3);
+  overflow-y:auto;transform:translateY(105%);visibility:hidden;transition:transform .2s,visibility .2s}
+#app.sheet-bottom.sheet-open #nodes{transform:none;visibility:visible}
+#app.sheet-bottom #sceneHeader{position:sticky;top:0;z-index:2;cursor:default}
+#app.sheet-bottom #nodeList{flex:none;max-height:9rem}
+#app.sheet-bottom #nodeProps{max-height:none;overflow:visible}
+/* Side drawer (Focus layout, any screen) */
+#app.sheet-side #nodes{position:fixed;top:0;bottom:0;right:0;width:min(20rem,88vw);z-index:900;
+  box-shadow:-6px 0 24px rgba(0,0,0,.3);transform:translateX(105%);visibility:hidden;transition:transform .2s,visibility .2s}
+#app.sheet-side.panel-left #nodes{right:auto;left:0;box-shadow:6px 0 24px rgba(0,0,0,.3);transform:translateX(-105%)}
+#app.sheet-side.sheet-open #nodes{transform:none;visibility:visible}
+</style>
+</head>
+<body>
+<div id="app" class="layout-classic">
+  <!-- TOP BAR -->
+  <div id="top">
+    <!-- Classic: full property controls -->
+    <span class="classic-only" style="display:flex;gap:0.5rem;align-items:center">
+      <label>Text <input type="text" id="pText" size="14"></label>
+      <label>Link <input type="text" id="pLink" size="14" placeholder="https://..."></label>
+      <label>Font <select id="pFont"></select></label>
+      <label>Size <input type="number" id="pSize" min="8" max="120" style="width:3rem"></label>
+      <label>Round <input type="number" id="pRadius" min="0" max="200" style="width:3rem"></label>
+      <label>Style <select id="pStyle"><option value="glass">Glass</option><option value="solid">Solid</option></select></label>
+      <label>Opacity <input type="range" id="pOpacity" min="5" max="100" value="30" style="width:3.75rem"></label>
+      <label>Text <input type="color" id="pColor"></label>
+      <label>Fill <input type="color" id="pBg"><button id="pNone" title="No fill">∅</button></label>
+      <span class="sep"></span>
+      <label>Event 
+        <select id="pAnimEv">
+          <option value="none">None</option>
+          <option value="hover">Hover</option>
+          <option value="click">Click</option>
+          <option value="load">On Load</option>
+        </select>
+      </label>
+      <label>Anim 
+        <select id="pAnimType">
+          <option value="none">None</option>
+          <option value="fade">Fade In</option>
+          <option value="slide">Slide Up</option>
+          <option value="zoom">Zoom In</option>
+          <option value="bounce">Bounce</option>
+          <option value="pulse">Pulse</option>
+          <option value="rotate">Rotate</option>
+        </select>
+      </label>
+      <label>Dur <input type="number" id="pAnimDur" min="0.1" max="5" step="0.1" style="width:2.875rem">s</label>
+      <span class="sep"></span>
+      <button id="bFront" title="Bring to front">Front</button>
+      <button id="bBack" title="Send to back">Back</button>
+      <button id="bDup" title="Duplicate">Copy</button>
+      <button id="bDel" title="Delete">Delete</button>
+    </span>
+    <!-- Compact: slim top – only global actions -->
+    <span class="compact-only" style="display:none;gap:0.5rem;align-items:center">
+      <button id="bUndoC" title="Undo">Undo</button>
+      <button id="bRedoC" title="Redo">Redo</button>
+      <span class="sep"></span>
+      <button id="bDupC" title="Duplicate">Copy</button>
+      <button id="bDelC" title="Delete">Delete</button>
+    </span>
+    <span class="sp"></span>
+    <button id="bNew" title="Start a new blank page (Undo brings it back)">New</button>
+    <button id="bOpen">Open</button>
+    <button id="bSave">Save project</button>
+    <button id="bExport" title="Export HTML">Export HTML</button>
+    <button id="bSettings" title="Settings">⚙ Settings</button>
+  </div>
+
+  <!-- LEFT TOOLBAR (classic only) -->
+  <div id="tools">
+    <button data-tool="select" title="Select / move">↖</button>
+    <button data-tool="button" title="Add button">▭</button>
+    <button data-tool="text" title="Add text">T</button>
+    <button data-tool="panel" title="Add panel">▢</button>
+    <button data-tool="image" title="Add photo">▣</button>
+  </div>
+
+  <!-- WORKSPACE -->
+  <div id="ws"><div id="page" class="edit"></div></div>
+
+  <!-- RIGHT PANEL -->
+  <div id="nodes">
+    <!-- Compact tools row -->
+    <div id="toolsCompact">
+      <button data-tool="select" title="Select / move (V)">↖</button>
+      <button data-tool="button" title="Add button (B)">▭</button>
+      <button data-tool="text" title="Add text (T)">T</button>
+      <button data-tool="panel" title="Add panel (P)">▢</button>
+      <button data-tool="image" title="Add photo (I)">▣</button>
+    </div>
+    <div class="panel-header" id="sceneHeader">
+      <span id="panelGrip" title="Drag left or right to move this panel">⠿</span>
+      <span>Scene</span><span class="sp"></span>
+      <button id="panelFlip" class="hdr-btn" title="Move panel to the other side">⇄</button>
+      <button id="sheetClose" class="hdr-btn sheet-only" title="Close">✕</button>
+    </div>
+    <div id="nodeList"></div>
+    <div class="panel-header" id="propsHeader">Properties</div>
+    <div id="nodeProps">
+      <!-- Always: transform -->
+      <div class="prop-block">
+        <div class="row">
+          <label>X <input type="number" id="nX" step="1"></label>
+          <label>Y <input type="number" id="nY" step="1"></label>
+        </div>
+        <div class="row">
+          <label>W <input type="number" id="nW" min="20" step="1"></label>
+          <label>H <input type="number" id="nH" min="20" step="1"></label>
+        </div>
+        <label>Scale <input type="number" id="nScale" min="0.1" max="5" step="0.05" style="width:4rem"></label>
+        <div class="al-row" title="Align to page">
+          <button class="al-btn" data-align="left" title="Align left">⇤</button>
+          <button class="al-btn" data-align="center" title="Center horizontally">↔</button>
+          <button class="al-btn" data-align="right" title="Align right">⇥</button>
+          <button class="al-btn" data-align="top" title="Align top">⤒</button>
+          <button class="al-btn" data-align="middle" title="Center vertically">↕</button>
+          <button class="al-btn" data-align="bottom" title="Align bottom">⤓</button>
+        </div>
+        <label><input type="checkbox" id="nVisible"> Visible</label>
+        <label><input type="checkbox" id="nLocked"> Locked</label>
+        <div class="zbtns">
+          <button id="nUp" title="Move up (toward front)">▲ Up</button>
+          <button id="nDown" title="Move down (toward back)">▼ Down</button>
+        </div>
+      </div>
+      <!-- Compact: content & style (mirrors top bar) -->
+      <div class="prop-block compact-only" style="display:none;flex-direction:column">
+        <label>Text <input type="text" id="cText"></label>
+        <label>Link <input type="text" id="cLink" placeholder="https://..."></label>
+        <div class="row">
+          <label>Size <input type="number" id="cSize" min="8" max="120"></label>
+          <label>Round <input type="number" id="cRadius" min="0" max="200"></label>
+        </div>
+        <label>Font <select id="cFont"></select></label>
+        <label>Style
+          <select id="cStyle"><option value="glass">Glass</option><option value="solid">Solid</option></select>
+        </label>
+        <label>Opacity <input type="range" id="cOpacity" min="5" max="100" value="30" style="width:100%"></label>
+        <div class="row">
+          <label>Text <input type="color" id="cColor"></label>
+          <label>Fill <input type="color" id="cBg"><button id="cNone" title="No fill" style="padding:2px 0.375rem">∅</button></label>
+        </div>
+      </div>
+      <!-- Compact: animation -->
+      <div class="prop-block compact-only" style="display:none;flex-direction:column">
+        <label>Event
+          <select id="cAnimEv">
+            <option value="none">None</option>
+            <option value="hover">Hover</option>
+            <option value="click">Click</option>
+            <option value="load">On Load</option>
+          </select>
+        </label>
+        <label>Anim
+          <select id="cAnimType">
+            <option value="none">None</option>
+            <option value="fade">Fade In</option>
+            <option value="slide">Slide Up</option>
+            <option value="zoom">Zoom In</option>
+            <option value="bounce">Bounce</option>
+            <option value="pulse">Pulse</option>
+            <option value="rotate">Rotate</option>
+          </select>
+        </label>
+        <label>Dur <input type="number" id="cAnimDur" min="0.1" max="5" step="0.1" style="width:3.5rem"> s</label>
+        <div class="zbtns">
+          <button id="cFront">Front</button>
+          <button id="cBack">Back</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <div id="bottom">
+    <button id="bPanel" class="sheet-only" title="Show scene &amp; properties">☰ Panel</button>
+    <button id="bUndo" title="Undo">Undo</button>
+    <button id="bRedo" title="Redo">Redo</button>
+    <span class="sep"></span>
+    <button id="zOut">−</button><span id="zTxt" style="min-width:2.625rem;text-align:center">100%</span>
+    <button id="zIn">+</button><button id="zFit">Fit</button>
+    <span class="sep"></span>
+    <button id="bGrid" title="Show grid (G)">Grid</button>
+    <button id="bSnap" title="Smart guides: snap to page center and other items (S). Hold Alt to bypass.">Snap</button>
+    <span class="sep"></span>
+    <label>Page <input type="number" id="pgW" min="200" max="3000" style="width:3.875rem"> ×
+      <input type="number" id="pgH" min="200" max="6000" style="width:3.875rem"></label>
+    <label>Bg <input type="color" id="pgBg"></label>
+    <span class="sp"></span>
+    <span id="hint" style="color:var(--muted)">Wheel = zoom · Space/drag = pan · Double-click = edit · Right-click = menu</span>
+    <span id="saveState" style="color:var(--muted)"></span>
+    <button id="bPrev">Preview</button>
+  </div>
+</div>
+
+<input type="file" id="fImg" accept="image/*" hidden>
+<input type="file" id="fJson" accept=".json,application/json" hidden>
+<div id="ctx"></div>
+<div id="toast"></div>
+<div id="dropHint"></div>
+
+<!-- Settings modal -->
+<div id="settingsOverlay">
+  <div id="settingsBox">
+    <h2>Settings <span class="sp"></span><button id="bSettingsClose" style="padding:0.25rem 0.625rem">✕</button></h2>
+    <div id="settingsMain">
+      <nav id="settingsTabs">
+        <button data-tab="general" class="on"><span>⚙</span> General</button>
+        <button data-tab="themes"><span>🎨</span> Themes</button>
+        <button data-tab="layout"><span>▤</span> Layout</button>
+        <button data-tab="shortcuts"><span>⌨</span> Shortcuts</button>
+        <button data-tab="about"><span>ⓘ</span> About</button>
+      </nav>
+      <div id="settingsBody">
+
+        <!-- ===== PAGE: General ===== -->
+        <section data-page="general" class="active">
+          <h3>Interface size</h3>
+          <div class="chk" style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap">
+            <span style="flex:1;min-width:7rem">Text, buttons &amp; panels</span>
+            <button id="uiMinus" title="Smaller">A−</button>
+            <input type="range" id="uiScale" min="70" max="200" step="5" style="width:9rem">
+            <button id="uiPlus" title="Larger">A+</button>
+            <span id="uiScaleTxt" style="min-width:3rem;text-align:right">100%</span>
+            <button id="uiReset" title="Back to 100%">100%</button>
+          </div>
+          <div style="color:var(--muted);font-size:.75rem;margin-bottom:1.25rem">Makes the whole editor bigger or smaller. 100% is the default.</div>
+
+          <h3>Editing</h3>
+          <label class="chk"><input type="checkbox" id="sGuides"> Smart guides (snap to page center and other items, hold Alt to bypass)</label>
+          <label class="chk"><input type="checkbox" id="sGrid"> Show grid</label>
+          <label class="chk"><input type="checkbox" id="sSnapGrid"> Snap to grid</label>
+          <label class="chk"><input type="checkbox" id="sAutosave"> Autosave in this browser</label>
+
+          <h3 style="margin-top:1.5rem">Reset</h3>
+          <button id="bResetDefaults" style="color:var(--danger)">Reset all settings to defaults</button>
+          <div style="color:var(--muted);font-size:.75rem;margin-top:.5rem">Resets theme, layout, interface size, panel position and shortcuts. Your page is not touched.</div>
+        </section>
+
+        <!-- ===== PAGE: Themes ===== -->
+        <section data-page="themes">
+          <h3>Themes</h3>
+          <div class="theme-grid" id="themeGrid"></div>
+        </section>
+
+        <!-- ===== PAGE: Layout ===== -->
+        <section data-page="layout">
+          <h3>Layout</h3>
+          <div class="layout-cards">
+            <div class="layout-card" data-layout="classic">
+              <strong>Classic</strong>
+              <span>Tools on the left, properties on top, scene on the right. On phones the panel opens from the bottom.</span>
+            </div>
+            <div class="layout-card" data-layout="compact">
+              <strong>Compact</strong>
+              <span>Blender-style. Tools, scene &amp; properties all in the side panel — less mouse travel. On phones the tools sit in a row on top.</span>
+            </div>
+            <div class="layout-card" data-layout="dock">
+              <strong>Dock</strong>
+              <span>Scene and properties in a wide strip along the bottom, like a timeline. Great for wide screens.</span>
+            </div>
+            <div class="layout-card" data-layout="focus">
+              <strong>Focus</strong>
+              <span>Just the tools and your page. Scene &amp; properties slide in from the side when you press Panel.</span>
+            </div>
+          </div>
+          <h3 style="margin-top:1.5rem">Side panel position</h3>
+          <div class="layout-cards">
+            <div class="side-card" data-side="left"><strong>Left</strong></div>
+            <div class="side-card" data-side="right"><strong>Right</strong></div>
+          </div>
+          <div style="color:var(--muted);font-size:.75rem;margin-top:.5rem">You can also drag the "Scene" header left or right. Not available in Dock or in the phone bottom sheet.</div>
+        </section>
+
+        <!-- ===== PAGE: Shortcuts ===== -->
+        <section data-page="shortcuts">
+          <h3>Keyboard Shortcuts</h3>
+          <p style="margin:0 0 .625rem;color:var(--muted);font-size:.75rem">Click a key to rebind. Press Escape to cancel listening.</p>
+          <table class="sc-table" id="scTable">
+            <thead><tr><th>Action</th><th>Shortcut</th></tr></thead>
+            <tbody></tbody>
+          </table>
+          <button id="bResetShortcuts" style="margin-top:1rem">Reset shortcuts</button>
+        </section>
+
+        <!-- ===== PAGE: About ===== -->
+        <section data-page="about">
+          <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
+            <div class="about-logo" id="aboutLogo">P</div>
+            <div>
+              <div class="about-name" id="aboutName"></div>
+              <div id="aboutVersion" style="color:var(--muted)"></div>
+            </div>
+          </div>
+          <p style="color:var(--muted);margin:0 0 1rem">A drag-and-drop web page builder. Add buttons, text, panels and photos, give them links and animations, then export a finished page.</p>
+          <div class="about-card">
+            <div class="about-row"><span>Version</span><strong id="aboutVer"></strong></div>
+            <div class="about-row"><span>Version name</span><strong id="aboutVerName"></strong></div>
+            <div class="about-row"><span>Created by</span><strong id="aboutAuthor"></strong></div>
+            <div class="about-row"><span>Discord</span><strong id="aboutDiscord"></strong></div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+    <div id="settingsFooter">
+      <button id="bSettingsDone" class="on">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== CUSTOMIZE HERE ===================== */
+const APP_NAME      = "Pagewright";
+const APP_VERSION   = "1.0";              // shown in Settings > About
+const APP_VERSION_NAME = "Aurora";        // version name, shown in Settings > About
+const AUTHOR_NAME   = "Nibir";            // shown in Settings > About
+const AUTHOR_DISCORD= "@real_nibir";      // shown in Settings > About
+const PAGE_W        = 900;
+const PAGE_H        = 1200;
+const PAGE_BG       = "#ffffff";
+const EXPORT_FILE   = "my-page.html";
+const PROJECT_FILE  = "my-page.json";
+const MAX_IMG_SIDE  = 1200;
+const SNAP          = 1;
+const MAX_HISTORY   = 60;
+const GRID_SIZE     = 20;          // grid spacing in page pixels
+const SNAP_DIST     = 6;           // how close (screen pixels) before smart guides snap
+const GUIDE_COLOR   = "#ff3b8d";   // color of the snap guide lines
+const PASTE_OFFSET  = 20;          // each repeated paste moves this many pixels
+const AUTOSAVE_KEY  = "pagewright_autosave";
+const AUTOSAVE_DELAY= 800;         // ms of quiet before autosaving
+// Fonts for text and buttons. "g:true" = Google Font (needs internet, loaded only when used).
+// "w" = the weights to download. To add a font: add one line (use single quotes inside css).
+const FONT_GROUPS = {safe:"Works offline (system fonts)", mono:"Monospace / code (need internet)",
+                     comic:"Comic & handwriting (need internet)", google:"Google Fonts (need internet)"};
+const FONTS = [
+  {id:"default",  name:"Default (system)",   css:"system-ui,-apple-system,'Segoe UI',Roboto,sans-serif", group:"safe"},
+  {id:"arial",    name:"Arial",              css:"Arial,Helvetica,sans-serif", group:"safe"},
+  {id:"verdana",  name:"Verdana",            css:"Verdana,Geneva,sans-serif", group:"safe"},
+  {id:"trebuchet",name:"Trebuchet",          css:"'Trebuchet MS',Tahoma,sans-serif", group:"safe"},
+  {id:"georgia",  name:"Georgia (serif)",    css:"Georgia,'Times New Roman',serif", group:"safe"},
+  {id:"times",    name:"Times (serif)",      css:"'Times New Roman',Times,serif", group:"safe"},
+  {id:"courier",  name:"Courier (mono)",     css:"'Courier New',Courier,monospace", group:"safe"},
+  {id:"impact",   name:"Impact (bold)",      css:"Impact,'Arial Black',sans-serif", group:"safe"},
+  {id:"code",     name:"Code (system mono)", css:"'Cascadia Mono',Consolas,Menlo,'DejaVu Sans Mono',monospace", group:"safe"},
+  {id:"comic",    name:"Comic (system)",     css:"'Comic Sans MS','Chalkboard SE',cursive", group:"safe"},
+  {id:"hand",     name:"Handwriting (system)",css:"'Segoe Print','Bradley Hand','Chalkboard SE','Comic Sans MS',cursive", group:"safe"},
+  {id:"inter",    name:"Inter",              css:"'Inter',system-ui,sans-serif",        g:true, w:"400;700", group:"google"},
+  {id:"poppins",  name:"Poppins",            css:"'Poppins',system-ui,sans-serif",      g:true, w:"400;700", group:"google"},
+  {id:"montserrat",name:"Montserrat",        css:"'Montserrat',system-ui,sans-serif",   g:true, w:"400;700", group:"google"},
+  {id:"spacegro", name:"Space Grotesk",      css:"'Space Grotesk',system-ui,sans-serif",g:true, w:"400;700", group:"google"},
+  {id:"oswald",   name:"Oswald (condensed)", css:"'Oswald',Impact,sans-serif",          g:true, w:"400;700", group:"google"},
+  {id:"bebas",    name:"Bebas Neue (title)", css:"'Bebas Neue',Impact,sans-serif",      g:true, w:"",        group:"google"},
+  {id:"righteous",name:"Righteous (display)",css:"'Righteous',system-ui,sans-serif",    g:true, w:"",        group:"google"},
+  {id:"playfair", name:"Playfair Display",   css:"'Playfair Display',Georgia,serif",    g:true, w:"400;700", group:"google"},
+  {id:"merri",    name:"Merriweather",       css:"'Merriweather',Georgia,serif",        g:true, w:"400;700", group:"google"},
+  {id:"lora",     name:"Lora",               css:"'Lora',Georgia,serif",                g:true, w:"400;700", group:"google"},
+  {id:"jetbrains",name:"JetBrains Mono",     css:"'JetBrains Mono','Courier New',monospace", g:true, w:"400;700", group:"mono"},
+  {id:"orbitron", name:"Orbitron (sci-fi)",  css:"'Orbitron',system-ui,sans-serif",     g:true, w:"400;700", group:"google"},
+  {id:"pressstart",name:"Press Start 2P (pixel)", css:"'Press Start 2P','Courier New',monospace", g:true, w:"", group:"google"},
+  {id:"pacifico", name:"Pacifico (script)",  css:"'Pacifico',cursive",                  g:true, w:"",        group:"google"},
+  {id:"lobster",  name:"Lobster (script)",   css:"'Lobster',cursive",                   g:true, w:"",        group:"google"},
+  {id:"dancing",  name:"Dancing Script",     css:"'Dancing Script',cursive",            g:true, w:"400;700", group:"google"},
+  {id:"caveat",   name:"Caveat (handwriting)",css:"'Caveat',cursive",                   g:true, w:"400;700", group:"comic"},
+  {id:"marker",   name:"Permanent Marker",   css:"'Permanent Marker',cursive",          g:true, w:"",        group:"comic"},
+  {id:"firacode", name:"Fira Code",          css:"'Fira Code','Courier New',monospace",       g:true, w:"400;700", group:"mono"},
+  {id:"sourcecode",name:"Source Code Pro",   css:"'Source Code Pro','Courier New',monospace", g:true, w:"400;700", group:"mono"},
+  {id:"robotomono",name:"Roboto Mono",       css:"'Roboto Mono','Courier New',monospace",     g:true, w:"400;700", group:"mono"},
+  {id:"spacemono", name:"Space Mono",        css:"'Space Mono','Courier New',monospace",      g:true, w:"400;700", group:"mono"},
+  {id:"plexmono",  name:"IBM Plex Mono",     css:"'IBM Plex Mono','Courier New',monospace",   g:true, w:"400;700", group:"mono"},
+  {id:"inconsolata",name:"Inconsolata",      css:"'Inconsolata','Courier New',monospace",     g:true, w:"400;700", group:"mono"},
+  {id:"vt323",     name:"VT323 (terminal)",  css:"'VT323','Courier New',monospace",           g:true, w:"",        group:"mono"},
+  {id:"sharetech", name:"Share Tech Mono",   css:"'Share Tech Mono','Courier New',monospace", g:true, w:"",        group:"mono"},
+  {id:"comicneue", name:"Comic Neue",        css:"'Comic Neue','Comic Sans MS',cursive",      g:true, w:"400;700", group:"comic"},
+  {id:"bangers",   name:"Bangers (comic book)",css:"'Bangers',Impact,cursive",               g:true, w:"",        group:"comic"},
+  {id:"patrick",   name:"Patrick Hand",      css:"'Patrick Hand','Comic Sans MS',cursive",    g:true, w:"",        group:"comic"},
+  {id:"indie",     name:"Indie Flower",      css:"'Indie Flower','Comic Sans MS',cursive",    g:true, w:"",        group:"comic"},
+  {id:"gloria",    name:"Gloria Hallelujah", css:"'Gloria Hallelujah','Comic Sans MS',cursive",g:true, w:"",       group:"comic"},
+  {id:"kalam",     name:"Kalam",             css:"'Kalam','Comic Sans MS',cursive",           g:true, w:"400;700", group:"comic"},
+  {id:"architects",name:"Architects Daughter",css:"'Architects Daughter','Comic Sans MS',cursive", g:true, w:"", group:"comic"},
+  {id:"fredoka",   name:"Fredoka (rounded)", css:"'Fredoka','Comic Sans MS',sans-serif",      g:true, w:"400;700", group:"comic"},
+  {id:"chewy",     name:"Chewy (cartoon)",   css:"'Chewy','Comic Sans MS',cursive",           g:true, w:"",        group:"comic"},
+  {id:"luckiest",  name:"Luckiest Guy (cartoon)",css:"'Luckiest Guy',Impact,cursive",        g:true, w:"",        group:"comic"}
+];
+// Themes shown in Settings > Themes. The colors of each id are in the CSS "THEMES" section at the top.
+const THEMES = [
+  {id:"auto",    name:"Auto (system)"},
+  {id:"light",   name:"Light"},
+  {id:"paper",   name:"Paper"},
+  {id:"dark",    name:"Dark"},
+  {id:"deep",    name:"Deep Dark"},
+  {id:"space",   name:"Space Black"},
+  {id:"skyblue", name:"Black & Sky Blue"},
+  {id:"redblue", name:"Red & Blue"},
+  {id:"midnight",name:"Midnight"},
+  {id:"forest",  name:"Forest"},
+  {id:"ember",   name:"Ember"},
+  {id:"violet",  name:"Violet & Pink"}
+];
+const DEFAULTS = {
+  button:{w:160,h:48,text:"Hover Me",color:"#ffffff",bg:"#4f7cff",size:16,radius:8,link:"",style:"solid",opacity:100,animEv:"hover",animType:"pulse",animDur:0.5,visible:true,scale:1},
+  text:  {w:260,h:40,text:"Your text here",color:"#222222",bg:"",size:20,radius:0,style:"solid",opacity:100,animEv:"none",animType:"none",animDur:0.5,visible:true,scale:1},
+  panel: {w:300,h:200,text:"",color:"#222222",bg:"#1f2a44",size:16,radius:12,style:"glass",opacity:75,animEv:"none",animType:"none",animDur:0.5,visible:true,scale:1},
+  image: {w:240,h:160,text:"",color:"#222222",bg:"",size:16,radius:0,src:"",style:"solid",opacity:100,animEv:"none",animType:"none",animDur:0.5,visible:true,scale:1}
+};
+/* ========================================================== */
+
+const $ = id => document.getElementById(id);
+const ws = $("ws"), pageEl = $("page"), appEl = $("app");
+
+// ---- Settings & shortcuts ----
+const DEFAULT_SHORTCUTS = {
+  undo:        {key:"z", mod:true, shift:false, label:"Undo"},
+  redo:        {key:"y", mod:true, shift:false, label:"Redo"},
+  redoAlt:     {key:"z", mod:true, shift:true,  label:"Redo (Alt)"},
+  duplicate:   {key:"d", mod:true, shift:false, label:"Duplicate"},
+  copy:        {key:"c", mod:true, shift:false, label:"Copy"},
+  paste:       {key:"v", mod:true, shift:false, label:"Paste"},
+  export:      {key:"e", mod:true, shift:false, label:"Export HTML"},
+  delete:      {key:"Delete", mod:false, shift:false, label:"Delete"},
+  toolSelect:  {key:"v", mod:false, shift:false, label:"Tool: Select"},
+  toolButton:  {key:"b", mod:false, shift:false, label:"Tool: Button"},
+  toolText:    {key:"t", mod:false, shift:false, label:"Tool: Text"},
+  toolPanel:   {key:"p", mod:false, shift:false, label:"Tool: Panel"},
+  toolImage:   {key:"i", mod:false, shift:false, label:"Tool: Image"},
+  settings:    {key:",", mod:true, shift:false, label:"Open Settings"},
+  cut:         {key:"x", mod:true, shift:false, label:"Cut"},
+  save:        {key:"s", mod:true, shift:false, label:"Save project"},
+  lock:        {key:"l", mod:false, shift:false, label:"Lock / unlock"},
+  hide:        {key:"h", mod:false, shift:false, label:"Hide / show"},
+  grid:        {key:"g", mod:false, shift:false, label:"Toggle grid"},
+  snap:        {key:"s", mod:false, shift:false, label:"Toggle smart guides"},
+  zoomFit:     {key:"0", mod:false, shift:false, label:"Zoom: fit page"},
+  zoom100:     {key:"1", mod:false, shift:false, label:"Zoom: 100%"},
+  zoomIn:      {key:"=", mod:false, shift:false, label:"Zoom in"},
+  zoomOut:     {key:"-", mod:false, shift:false, label:"Zoom out"},
+  preview:     {key:"Enter", mod:true, shift:false, label:"Toggle preview"},
+};
+
+const DEFAULT_SETTINGS = {
+  layout: "classic",
+  showGrid: false,      // draw the grid
+  snapGrid: false,      // snap moving/resizing to the grid
+  snapGuides: true,     // smart guides
+  autosave: true,       // keep a copy in this browser
+  theme: "auto",        // color theme id (see THEMES)
+  uiScale: 100,         // interface size in percent (70 - 200)
+  panelSide: "right",   // side panel on the "left" or the "right"
+  shortcuts: JSON.parse(JSON.stringify(DEFAULT_SHORTCUTS))
+};
+
+let settings = loadSettings();
+
+// Small screens (phones, small windows) switch to the phone layout automatically
+const mobileQuery = matchMedia("(max-width: 760px), (max-height: 480px) and (pointer: coarse)");
+let isMobile = mobileQuery.matches;
+mobileQuery.addEventListener("change", () => { isMobile = mobileQuery.matches; setSheet(false); applyLayout(); syncBar(); });
+addEventListener("orientationchange", () => setTimeout(fit, 250));
+
+function loadSettings(){
+  try{
+    const raw = localStorage.getItem("pagewright_settings");
+    if(!raw) return JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+    const s = JSON.parse(raw);
+    // merge shortcuts so new ones appear
+    s.shortcuts = {...JSON.parse(JSON.stringify(DEFAULT_SHORTCUTS)), ...(s.shortcuts||{})};
+    if(!["classic","compact","dock","focus"].includes(s.layout)) s.layout = "classic";
+    for(const k of ["showGrid","snapGrid","snapGuides","autosave"]){
+      if(typeof s[k] !== "boolean") s[k] = DEFAULT_SETTINGS[k];
+    }
+    s.uiScale = (typeof s.uiScale === "number") ? Math.min(200, Math.max(70, Math.round(s.uiScale))) : 100;
+    if(!["left","right"].includes(s.panelSide)) s.panelSide = "right";
+    if(!THEMES.some(t => t.id === s.theme)) s.theme = "auto";
+    return s;
+  }catch(_){ return JSON.parse(JSON.stringify(DEFAULT_SETTINGS)); }
+}
+function saveSettings(){
+  try{ localStorage.setItem("pagewright_settings", JSON.stringify(settings)); }catch(_){}
+}
+// Property controls sit in the top bar only in the Classic layout on a big screen; everywhere else they live in the panel
+function useClassicBar(){ return settings.layout === "classic" && !isMobile; }
+// Interface size: everything in the editor UI is sized in rem, so changing the root font size scales it all
+function applyUiScale(){
+  document.documentElement.style.fontSize = (16 * settings.uiScale / 100) + "px";
+}
+function applyLayout(){
+  const lay = settings.layout, classicBar = useClassicBar();
+  const sheetBottom = isMobile && (lay === "classic" || lay === "compact");   // panel pops up from the bottom on phones
+  const sheetSide = lay === "focus";                                          // panel is a side drawer
+  const movable = !sheetBottom && lay !== "dock";                             // can the panel go left / right?
+  for(const n of ["classic","compact","dock","focus"]) appEl.classList.toggle("layout-" + n, n === lay);
+  appEl.classList.toggle("mobile", isMobile);
+  appEl.classList.toggle("bar-classic", classicBar);
+  appEl.classList.toggle("bar-compact", !classicBar);
+  appEl.classList.toggle("sheet-bottom", sheetBottom);
+  appEl.classList.toggle("sheet-side", sheetSide);
+  appEl.classList.toggle("panel-left", settings.panelSide === "left" && movable);
+  if(!sheetBottom && !sheetSide) appEl.classList.remove("sheet-open");
+  document.querySelectorAll(".classic-only").forEach(el=>{ el.style.display = classicBar ? "flex" : "none"; });
+  document.querySelectorAll(".compact-only").forEach(el=>{ el.style.display = classicBar ? "none" : "flex"; });
+  document.querySelectorAll(".layout-card").forEach(c => c.classList.toggle("active", c.dataset.layout === lay));
+  $("bPanel").classList.toggle("on", appEl.classList.contains("sheet-open"));
+  fit();
+}
+
+function fmtShortcut(sc){
+  if(!sc) return "—";
+  const parts = [];
+  if(sc.mod) parts.push(navigator.platform.includes("Mac") ? "⌘" : "Ctrl");
+  if(sc.shift) parts.push("Shift");
+  let k = sc.key;
+  if(k === " ") k = "Space";
+  if(k.length === 1) k = k.toUpperCase();
+  parts.push(k);
+  return parts.join("+");
+}
+
+function matchShortcut(e, sc){
+  if(!sc) return false;
+  const mod = e.ctrlKey || e.metaKey;
+  if(!!sc.mod !== mod) return false;
+  if(!!sc.shift !== e.shiftKey) return false;
+  const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  const sk = sc.key.length === 1 ? sc.key.toLowerCase() : sc.key;
+  // Delete/Backspace both map to delete action
+  if(sk === "Delete" && (k === "Delete" || k === "Backspace")) return true;
+  return k === sk;
+}
+
+// ---- Document data ----
+let doc = {w:PAGE_W, h:PAGE_H, bg:PAGE_BG, items:[]};
+let selId = null, tool = "select", preview = false, nextId = 1;
+let view = {x:40, y:30, z:1};
+let history = [], hPos = -1;
+let clipboard = null;
+let pasteN = 0;                       // how many times the clipboard was pasted (for the offset)
+let lastTap = {id:null, t:0};         // used to detect a double click / double tap
+let pendingReplaceId = null;          // set when double-clicking an image to swap its picture
+
+// Overlay on top of the page: grid + snap guide lines (re-attached after every render)
+const guideLayer = document.createElement("div"); guideLayer.id = "guides";
+const gridLayer  = document.createElement("div"); gridLayer.id = "gridLayer";
+const guideV = document.createElement("div"); guideV.id = "guideV"; guideV.className = "guide";
+const guideH = document.createElement("div"); guideH.id = "guideH"; guideH.className = "guide";
+guideV.style.background = guideH.style.background = "var(--guide, " + GUIDE_COLOR + ")";   // theme can override --guide
+gridLayer.style.backgroundSize = GRID_SIZE + "px " + GRID_SIZE + "px";
+guideLayer.append(gridLayer, guideV, guideH);
+
+// ---- Small message ----
+let toastTimer = null;
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 1600);
+}
+
+// ---- Autosave (stored in this browser only) ----
+let saveTimer = null;
+function scheduleAutosave(){
+  if(!settings.autosave) return;
+  clearTimeout(saveTimer); saveTimer = setTimeout(writeAutosave, AUTOSAVE_DELAY);
+  $("saveState").textContent = "Unsaved changes…";
+}
+function writeAutosave(){
+  if(!settings.autosave) return;
+  try{
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(doc));
+    $("saveState").textContent = "Autosaved " + new Date().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+  }catch(_){ $("saveState").textContent = "Autosave full – use Save project"; }
+}
+function restoreAutosave(){
+  if(!settings.autosave) return false;
+  try{
+    const raw = localStorage.getItem(AUTOSAVE_KEY); if(!raw) return false;
+    const d = JSON.parse(raw);
+    if(!d || !Array.isArray(d.items)) return false;
+    d.items.forEach(it => { if(it.visible === undefined) it.visible = true; if(it.scale === undefined) it.scale = 1; });
+    doc = d; nextId = Math.max(0, ...doc.items.map(i => i.id)) + 1; selId = null;
+    return true;
+  }catch(_){ return false; }
+}
+addEventListener("pagehide", () => { if(settings.autosave) writeAutosave(); });
+
+// ---- Grid + smart guides ----
+function updateGridVisibility(){
+  guideLayer.style.display = preview ? "none" : "block";
+  gridLayer.style.display = (settings.showGrid && !preview && GRID_SIZE*view.z >= 6) ? "block" : "none";
+}
+function snapToGrid(v){ return Math.round(v/GRID_SIZE)*GRID_SIZE; }
+// Collect the lines (page edges, center, other items) the moving item may snap to
+function snapTargets(it){
+  const xs = [0, doc.w/2, doc.w], ys = [0, doc.h/2, doc.h];
+  for(const o of doc.items){
+    if(o === it || o.visible === false) continue;
+    const k = o.scale || 1, w = o.w*k, h = o.h*k;
+    xs.push(o.x, o.x + w/2, o.x + w); ys.push(o.y, o.y + h/2, o.y + h);
+  }
+  return {xs, ys};
+}
+// Find the closest target for left/center/right (offsets) of the item
+function nearestLine(pos, offsets, targets, tol){
+  let best = null;
+  for(const off of offsets) for(const t of targets){
+    const d = Math.abs(pos + off - t);
+    if(d <= tol && (!best || d < best.d)) best = {d, pos:t - off, line:t};
+  }
+  return best;
+}
+function snapToGuides(it, x, y, tg){
+  const k = it.scale || 1, sw = it.w*k, sh = it.h*k, tol = SNAP_DIST/view.z;
+  const bx = nearestLine(x, [0, sw/2, sw], tg.xs, tol);
+  const by = nearestLine(y, [0, sh/2, sh], tg.ys, tol);
+  return {x: bx ? Math.round(bx.pos) : x, y: by ? Math.round(by.pos) : y,
+          gx: bx ? bx.line : null, gy: by ? by.line : null};
+}
+function showGuides(gx, gy){
+  const th = 1.5/view.z;                      // keep lines about 1.5 screen pixels thick
+  if(gx === null) guideV.style.display = "none";
+  else { guideV.style.display = "block"; guideV.style.width = th+"px"; guideV.style.left = clamp(gx - th/2, 0, doc.w - th)+"px"; }
+  if(gy === null) guideH.style.display = "none";
+  else { guideH.style.display = "block"; guideH.style.height = th+"px"; guideH.style.top = clamp(gy - th/2, 0, doc.h - th)+"px"; }
+}
+function hideGuides(){ guideV.style.display = "none"; guideH.style.display = "none"; }
+
+function hexToRgba(hex, alpha = 0.3) {
+  if (!hex || hex === "transparent") return "transparent";
+  if (hex.startsWith("rgba") || hex.startsWith("hsla")) return hex;
+  let c = hex.replace("#", "");
+  if (c.length === 3) c = c.split("").map(x => x + x).join("");
+  if (c.length === 6) {
+    const r = parseInt(c.substring(0, 2), 16);
+    const g = parseInt(c.substring(2, 4), 16);
+    const b = parseInt(c.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  return hex;
+}
+
+function playAnim(el, type, dur) {
+  if (!type || type === "none") return;
+  el.style.animation = "none";
+  void el.offsetWidth;
+  el.style.animation = `anim-${type} ${dur || 0.5}s ease forwards`;
+}
+
+function commit(){
+  history = history.slice(0, hPos+1);
+  history.push(JSON.stringify(doc));
+  if(history.length > MAX_HISTORY) history.shift();
+  hPos = history.length-1;
+  scheduleAutosave();
+  updateButtons();
+}
+function loadSnap(i){
+  hPos = i; doc = JSON.parse(history[i]);
+  scheduleAutosave();
+  if(!doc.items.some(it=>it.id===selId)) selId = null;
+  render();
+}
+function undo(){ if(hPos>0) loadSnap(hPos-1); }
+function redo(){ if(hPos<history.length-1) loadSnap(hPos+1); }
+
+const sel = () => doc.items.find(it=>it.id===selId);
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+function fixLink(u){
+  u = (u||"").trim(); if(!u) return "";
+  if(/^(https?:|mailto:|tel:|#)/i.test(u)) return u;
+  if(/^[a-z][a-z0-9+.-]*:/i.test(u)) return "";
+  return "https://" + u;
+}
+function toPage(cx,cy){
+  const r = ws.getBoundingClientRect();
+  return {x:(cx-r.left-view.x)/view.z, y:(cy-r.top-view.y)/view.z};
+}
+
+function styleNode(n,it){
+  const isGlass = (it.style === "glass" || (!it.style && it.type === "panel"));
+  const alpha = (it.opacity !== undefined ? it.opacity : (isGlass ? 30 : 100)) / 100;
+  let bgStyle = "transparent";
+  if (it.bg) bgStyle = isGlass ? hexToRgba(it.bg, alpha) : it.bg;
+  const glassCss = isGlass
+    ? "backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.25);"
+    : "";
+  const sc = (it.scale !== undefined && it.scale !== 1) ? it.scale : 1;
+  const vis = (it.visible === false) ? "visibility:hidden;" : "";
+  n.style.cssText = `left:${it.x}px;top:${it.y}px;width:${it.w}px;height:${it.h}px;` +
+    `background:${bgStyle};color:${it.color};font-size:${it.size}px;border-radius:${it.radius}px;${glassCss}` +
+    `transform:scale(${sc});transform-origin:0 0;${vis}` + fontStyle(it);
+  loadFont(it.font);
+}
+
+function nodeIcon(type){ return {button:"▭", text:"T", panel:"▢", image:"▣"}[type] || "•"; }
+function nodeLabel(it){
+  if(it.type === "text" || it.type === "button"){
+    const t = (it.text || "").trim();
+    return t ? (t.length > 22 ? t.slice(0,20)+"…" : t) : it.type;
+  }
+  if(it.type === "image") return "Image";
+  return "Panel";
+}
+
+function makeNodeBtn(txt, title, active, fn){
+  const b = document.createElement("span");
+  b.className = "ni-btn" + (active ? " active" : "");
+  b.textContent = txt; b.title = title;
+  b.onclick = e => { e.stopPropagation(); if(!preview) fn(); };
+  return b;
+}
+function renderNodeList(){
+  const list = $("nodeList");
+  list.innerHTML = "";
+  const ordered = [...doc.items].reverse();
+  for(const it of ordered){
+    const row = document.createElement("div");
+    row.className = "node-item" + (it.id===selId ? " sel" : "") + (it.visible===false ? " hidden-node" : "");
+    row.dataset.id = it.id;
+    const ic = document.createElement("span"); ic.className = "node-icon"; ic.textContent = nodeIcon(it.type);
+    const lb = document.createElement("span"); lb.className = "node-label"; lb.textContent = nodeLabel(it);
+    const tools = document.createElement("span"); tools.className = "ni-tools";
+    tools.append(
+      makeNodeBtn("👁", "Show / hide (H)", it.visible !== false, () => toggleHide(it)),
+      makeNodeBtn("🔒", "Lock / unlock (L)", !!it.locked, () => toggleLock(it))
+    );
+    row.append(ic, lb, tools);
+    row.onclick = () => { if(preview) return; selId = it.id; tool = "select"; render(); };
+    list.appendChild(row);
+  }
+}
+
+function render(){
+  pageEl.style.width = doc.w+"px"; pageEl.style.height = doc.h+"px"; pageEl.style.background = doc.bg;
+  pageEl.className = preview ? "" : "edit";
+  pageEl.innerHTML = "";
+  for(const it of doc.items){
+    const n = document.createElement("div");
+    n.className = "item "+it.type+(it.id===selId&&!preview?" sel":"")+(it.locked?" locked":"");
+    n.dataset.id = it.id;
+    styleNode(n,it);
+    if(it.type==="image"){ if(it.src){ const im=document.createElement("img"); im.src=it.src; n.appendChild(im); } }
+    else n.textContent = it.text;
+    if(it.id===selId && !preview && !it.locked){ const h=document.createElement("div"); h.className="handle"; n.appendChild(h); }
+    if(preview){
+      if(it.animEv === "load") playAnim(n, it.animType, it.animDur);
+      if(it.animEv === "hover") n.onmouseenter = () => playAnim(n, it.animType, it.animDur);
+    }
+    pageEl.appendChild(n);
+  }
+  pageEl.appendChild(guideLayer);
+  applyView(); syncBar(); updateButtons(); renderNodeList();
+}
+
+function applyView(){
+  pageEl.style.transform = `translate(${view.x}px,${view.y}px) scale(${view.z})`;
+  $("zTxt").textContent = Math.round(view.z*100)+"%";
+  pageEl.style.setProperty("--inv", Math.min(3, Math.max(1, 1/view.z)).toFixed(2));   // keeps the resize handle easy to grab when zoomed out
+  updateGridVisibility();
+}
+
+function syncBar(){
+  const it = sel();
+  const classicIds = ["pText","pLink","pFont","pSize","pRadius","pStyle","pOpacity","pColor","pBg","pNone","pAnimEv","pAnimType","pAnimDur","bFront","bBack","bDup","bDel"];
+  const nodeIds = ["nX","nY","nW","nH","nScale","nVisible","nLocked","nUp","nDown"];
+  const compactIds = ["cText","cLink","cFont","cSize","cRadius","cStyle","cOpacity","cColor","cBg","cNone","cAnimEv","cAnimType","cAnimDur","cFront","cBack"];
+  for(const id of [...classicIds, ...nodeIds, ...compactIds]) {
+    const el = $(id); if(el) el.disabled = !it;
+  }
+  $("bDupC").disabled = !it; $("bDelC").disabled = !it;
+  document.querySelectorAll(".al-btn").forEach(b => b.disabled = !it);
+
+  if(it){
+    // classic top
+    $("pText").value = it.text || "";
+    $("pLink").value = it.link || "";
+    $("pSize").value = it.size || 16;
+    $("pRadius").value = it.radius || 0;
+    $("pStyle").value = it.style || (it.type === "panel" ? "glass" : "solid");
+    $("pOpacity").value = it.opacity !== undefined ? it.opacity : (it.style === "glass" || it.type === "panel" ? 30 : 100);
+    $("pColor").value = it.color || "#ffffff";
+    $("pBg").value = (it.bg && it.bg.startsWith("#")) ? it.bg : "#ffffff";
+    $("pAnimEv").value = it.animEv || "none";
+    $("pAnimType").value = it.animType || "none";
+    $("pAnimDur").value = it.animDur || 0.5;
+    $("pText").disabled = (it.type==="panel"||it.type==="image");
+    $("pLink").disabled = it.type!=="button";
+    $("pSize").disabled = $("pColor").disabled = (it.type==="panel"||it.type==="image");
+    $("pFont").value = it.font || "default"; $("pFont").disabled = (it.type==="panel"||it.type==="image");
+
+    // node transform
+    $("nX").value = Math.round(it.x);
+    $("nY").value = Math.round(it.y);
+    $("nW").value = Math.round(it.w);
+    $("nH").value = Math.round(it.h);
+    $("nScale").value = it.scale !== undefined ? it.scale : 1;
+    $("nVisible").checked = it.visible !== false;
+    $("nLocked").checked = !!it.locked;
+
+    // compact content
+    $("cText").value = it.text || "";
+    $("cLink").value = it.link || "";
+    $("cSize").value = it.size || 16;
+    $("cRadius").value = it.radius || 0;
+    $("cStyle").value = it.style || (it.type === "panel" ? "glass" : "solid");
+    $("cOpacity").value = it.opacity !== undefined ? it.opacity : (it.style === "glass" || it.type === "panel" ? 30 : 100);
+    $("cColor").value = it.color || "#ffffff";
+    $("cBg").value = (it.bg && it.bg.startsWith("#")) ? it.bg : "#ffffff";
+    $("cAnimEv").value = it.animEv || "none";
+    $("cAnimType").value = it.animType || "none";
+    $("cAnimDur").value = it.animDur || 0.5;
+    $("cText").disabled = (it.type==="panel"||it.type==="image");
+    $("cLink").disabled = it.type!=="button";
+    $("cSize").disabled = $("cColor").disabled = (it.type==="panel"||it.type==="image");
+    $("cFont").value = it.font || "default"; $("cFont").disabled = (it.type==="panel"||it.type==="image");
+  }
+  $("pgW").value = doc.w; $("pgH").value = doc.h; $("pgBg").value = doc.bg;
+  document.querySelectorAll("#tools button, #toolsCompact button").forEach(b=>b.classList.toggle("on", b.dataset.tool===tool));
+  $("bPrev").classList.toggle("on", preview);
+  $("bGrid").classList.toggle("on", settings.showGrid);
+  $("bSnap").classList.toggle("on", settings.snapGuides);
+}
+function updateButtons(){
+  $("bUndo").disabled = hPos<=0; $("bRedo").disabled = hPos>=history.length-1;
+  $("bUndoC").disabled = hPos<=0; $("bRedoC").disabled = hPos>=history.length-1;
+}
+
+// ---- Adding items ----
+let pendingPt = null;
+function addItem(type, pt){
+  if(type==="image"){ pendingPt = pt; pendingReplaceId = null; $("fImg").click(); return; }
+  const d = DEFAULTS[type];
+  const it = {id:nextId++, type, x:Math.round(pt.x-d.w/2), y:Math.round(pt.y-d.h/2), ...d};
+  doc.items.push(it); selId = it.id; tool = "select"; commit(); render();
+}
+// Read an image file, shrink it, then add it as a new item (or swap the picture of an existing one)
+function addImageFile(f, pt, replaceId){
+  if(!f || !/^image\//.test(f.type)) return;
+  const r = new FileReader();
+  r.onload = () => {
+    const im = new Image();
+    im.onload = () => {
+      const k = Math.min(1, MAX_IMG_SIDE/Math.max(im.width,im.height));
+      const cv = document.createElement("canvas"); cv.width = Math.round(im.width*k); cv.height = Math.round(im.height*k);
+      cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height);
+      const src = cv.toDataURL(f.type==="image/png"?"image/png":"image/jpeg", .88);
+      if(replaceId){
+        const old = doc.items.find(i => i.id === replaceId);
+        if(old){ old.src = src; commit(); render(); return; }
+      }
+      const w = 300, h = Math.round(w*im.height/im.width), p = pt || {x:doc.w/2,y:doc.h/2};
+      const it = {id:nextId++, type:"image", ...DEFAULTS.image, w, h, src, x:Math.round(p.x-w/2), y:Math.round(p.y-h/2)};
+      doc.items.push(it); selId = it.id; tool = "select"; commit(); render();
+    };
+    im.src = r.result;
+  };
+  r.readAsDataURL(f);
+}
+$("fImg").onchange = e => {
+  const f = e.target.files[0]; e.target.value = "";
+  addImageFile(f, pendingPt, pendingReplaceId); pendingReplaceId = null;
+};
+// Drag a picture file onto the workspace
+ws.addEventListener("dragover", e => {
+  if(e.dataTransfer && [...e.dataTransfer.types].includes("Files")) e.preventDefault();
+});
+ws.addEventListener("drop", e => {
+  e.preventDefault(); if(preview) return;
+  const f = [...e.dataTransfer.files].find(f => /^image\//.test(f.type));
+  if(f) addImageFile(f, toPage(e.clientX, e.clientY));
+});
+// Paste a picture from the clipboard (screenshots, copied images)
+addEventListener("paste", e => {
+  if(preview || /INPUT|TEXTAREA/.test(document.activeElement.tagName)) return;
+  const files = (e.clipboardData && e.clipboardData.files) || [];
+  const f = [...files].find(f => /^image\//.test(f.type));
+  if(f){ e.preventDefault(); addImageFile(f, {x:doc.w/2, y:doc.h/2}); }
+});
+
+// ---- Pointer handling ----
+const ptrs = new Map(); let drag = null, pinch = null, spaceDown = false;
+ws.addEventListener("pointerdown", e => {
+  ws.setPointerCapture(e.pointerId); ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptrs.size===2){ drag = null; const [a,b]=[...ptrs.values()];
+    pinch = {d:Math.hypot(a.x-b.x,a.y-b.y), z:view.z}; return; }
+  const node = e.target.closest(".item"), isHandle = e.target.classList.contains("handle");
+  const pan = {mode:"pan", sx:e.clientX, sy:e.clientY, vx:view.x, vy:view.y};
+  if(spaceDown || e.button===1){ drag = pan; return; }
+  if(tool!=="select" && !preview){ addItem(tool, toPage(e.clientX,e.clientY)); return; }
+  if(node && !preview){
+    const id = +node.dataset.id, now = performance.now();
+    // Double click / double tap on an item = edit it
+    if(!isHandle && lastTap.id === id && now - lastTap.t < 350){ lastTap.t = 0; selId = id; editSelected(); return; }
+    lastTap = {id, t:now};
+    selId = id; const it = sel();
+    if(it.locked) drag = pan;     // locked items can't move, dragging over them pans instead
+    else drag = {mode:isHandle?"resize":"move", sx:e.clientX, sy:e.clientY, ox:it.x, oy:it.y, ow:it.w, oh:it.h, moved:false,
+                 targets: isHandle ? null : snapTargets(it)};
+    render();
+  } else {
+    if(!node && selId!==null){ selId = null; render(); }
+    drag = pan;
+  }
+});
+ws.addEventListener("pointermove", e => {
+  if(!ptrs.has(e.pointerId)) return;
+  ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(pinch && ptrs.size>=2){
+    const [a,b]=[...ptrs.values()];
+    zoomAt((a.x+b.x)/2,(a.y+b.y)/2, pinch.z*Math.hypot(a.x-b.x,a.y-b.y)/pinch.d); return;
+  }
+  if(!drag) return;
+  const dx = e.clientX-drag.sx, dy = e.clientY-drag.sy;
+  if(Math.abs(dx)+Math.abs(dy) < 2) return;
+  if(drag.mode==="pan"){ view.x = drag.vx+dx; view.y = drag.vy+dy; applyView(); return; }
+  const it = sel(); if(!it) return; drag.moved = true;
+  const s = v => Math.round(v/SNAP)*SNAP;
+  if(drag.mode==="move"){
+    let x = s(drag.ox+dx/view.z), y = s(drag.oy+dy/view.z);
+    if(!e.altKey){                                   // hold Alt = no snapping
+      if(settings.snapGrid){ x = snapToGrid(x); y = snapToGrid(y); }
+      if(settings.snapGuides){ const g = snapToGuides(it, x, y, drag.targets); x = g.x; y = g.y; showGuides(g.gx, g.gy); }
+      else hideGuides();
+    } else hideGuides();
+    it.x = x; it.y = y;
+  } else {
+    let w = Math.max(20,s(drag.ow+dx/view.z)), h = Math.max(20,s(drag.oh+dy/view.z));
+    if(settings.snapGrid && !e.altKey){ w = Math.max(20,snapToGrid(w)); h = Math.max(20,snapToGrid(h)); }
+    // Images keep their shape by default; hold Shift to stretch them. Other items: hold Shift to keep shape.
+    if((it.type === "image") !== e.shiftKey) h = Math.max(20, Math.round(w*drag.oh/drag.ow));
+    it.w = w; it.h = h;
+  }
+  const n = pageEl.querySelector(`[data-id="${it.id}"]`); if(n) styleNode(n,it);
+  if(it){ $("nX").value = Math.round(it.x); $("nY").value = Math.round(it.y); $("nW").value = Math.round(it.w); $("nH").value = Math.round(it.h); }
+});
+function endPtr(e){
+  ptrs.delete(e.pointerId);
+  if(ptrs.size<2) pinch = null;
+  if(ptrs.size===0){ if(drag && drag.moved) commit(); drag = null; hideGuides(); }
+}
+ws.addEventListener("pointerup", endPtr); ws.addEventListener("pointercancel", endPtr);
+ws.addEventListener("click", e => {
+  if(!preview) return;
+  const n = e.target.closest(".item"); if(!n) return;
+  const it = doc.items.find(i=>i.id===+n.dataset.id); if(!it) return;
+  if(it.animEv === "click") playAnim(n, it.animType, it.animDur);
+  if(it.type === "button"){
+    const u = fixLink(it.link);
+    if(u) window.open(u,"_blank","noopener");
+  }
+});
+ws.addEventListener("wheel", e => { e.preventDefault(); zoomAt(e.clientX,e.clientY,view.z*(e.deltaY<0?1.1:1/1.1)); },{passive:false});
+
+function zoomAt(cx,cy,nz){
+  nz = clamp(nz,.1,4); const r = ws.getBoundingClientRect();
+  const px = (cx-r.left-view.x)/view.z, py = (cy-r.top-view.y)/view.z;
+  view.x = cx-r.left-px*nz; view.y = cy-r.top-py*nz; view.z = nz; applyView();
+}
+function zoomCenter(f){ const r=ws.getBoundingClientRect(); zoomAt(r.left+r.width/2,r.top+r.height/2,view.z*f); }
+function fit(){
+  const r = ws.getBoundingClientRect();
+  if(r.width < 10 || r.height < 10) return;
+  view.z = clamp(Math.min((r.width-40)/doc.w,(r.height-40)/doc.h),.1,1);
+  view.x = (r.width-doc.w*view.z)/2; view.y = (r.height-doc.h*view.z)/2; applyView();
+}
+$("zIn").onclick = () => zoomCenter(1.25); $("zOut").onclick = () => zoomCenter(.8); $("zFit").onclick = fit;
+
+// ---- Property binds ----
+function bind(id, key, conv){
+  const el = $(id); if(!el) return;
+  el.oninput = () => { const it=sel(); if(!it) return; it[key] = conv?conv(el.value):el.value; render(); };
+  el.onchange = () => commit();
+}
+// classic top
+bind("pText","text"); bind("pLink","link"); bind("pFont","font");
+bind("pSize","size",v=>clamp(+v||16,8,120)); bind("pRadius","radius",v=>clamp(+v||0,0,200));
+bind("pStyle","style"); bind("pOpacity","opacity",v=>clamp(+v||30,5,100));
+bind("pColor","color"); bind("pBg","bg");
+bind("pAnimEv","animEv"); bind("pAnimType","animType"); bind("pAnimDur","animDur",v=>clamp(+v||0.5,0.1,5));
+// compact mirrors
+bind("cText","text"); bind("cLink","link"); bind("cFont","font");
+bind("cSize","size",v=>clamp(+v||16,8,120)); bind("cRadius","radius",v=>clamp(+v||0,0,200));
+bind("cStyle","style"); bind("cOpacity","opacity",v=>clamp(+v||30,5,100));
+bind("cColor","color"); bind("cBg","bg");
+bind("cAnimEv","animEv"); bind("cAnimType","animType"); bind("cAnimDur","animDur",v=>clamp(+v||0.5,0.1,5));
+
+function bindNode(id, key, conv){
+  $(id).oninput = () => {
+    const it = sel(); if(!it) return;
+    it[key] = conv ? conv($(id).value) : $(id).value;
+    const n = pageEl.querySelector(`[data-id="${it.id}"]`);
+    if(n) styleNode(n, it);
+    renderNodeList();
+  };
+  $(id).onchange = () => commit();
+}
+bindNode("nX", "x", v => Math.round(+v || 0));
+bindNode("nY", "y", v => Math.round(+v || 0));
+bindNode("nW", "w", v => Math.max(20, Math.round(+v || 20)));
+bindNode("nH", "h", v => Math.max(20, Math.round(+v || 20)));
+bindNode("nScale", "scale", v => clamp(+v || 1, 0.1, 5));
+
+$("nVisible").onchange = () => {
+  const it = sel(); if(!it) return;
+  it.visible = $("nVisible").checked;
+  commit(); render();
+};
+
+$("nLocked").onchange = () => { const it = sel(); if(it){ it.locked = $("nLocked").checked; commit(); render(); } };
+
+// Align the selected item to the page edges / center
+function alignSel(mode){
+  const it = sel(); if(!it) return;
+  const k = it.scale || 1, sw = it.w*k, sh = it.h*k;
+  if(mode==="left") it.x = 0;
+  else if(mode==="center") it.x = Math.round((doc.w-sw)/2);
+  else if(mode==="right") it.x = Math.round(doc.w-sw);
+  else if(mode==="top") it.y = 0;
+  else if(mode==="middle") it.y = Math.round((doc.h-sh)/2);
+  else if(mode==="bottom") it.y = Math.round(doc.h-sh);
+  commit(); render();
+}
+document.querySelectorAll(".al-btn").forEach(b => b.onclick = () => alignSel(b.dataset.align));
+
+function toggleLock(it){ it = it || sel(); if(!it) return; it.locked = !it.locked; commit(); render(); toast(it.locked ? "Locked" : "Unlocked"); }
+function toggleHide(it){ it = it || sel(); if(!it) return; it.visible = (it.visible === false); commit(); render(); }
+
+// Double click: text/button -> jump into the text box, image -> pick a new picture
+function editSelected(){
+  const it = sel(); if(!it) return;
+  setTimeout(() => {
+    if(it.type === "image"){ pendingReplaceId = it.id; pendingPt = null; $("fImg").click(); return; }
+    if(it.type === "panel") return;
+    if(appEl.classList.contains("sheet-bottom") || appEl.classList.contains("sheet-side")) setSheet(true);
+    const box = useClassicBar() ? $("pText") : $("cText");
+    box.focus(); box.select();
+  }, 60);
+}
+
+// Copy / cut / paste (each paste steps a bit further so copies don't stack exactly)
+function copySel(it){ it = it || sel(); if(!it) return; clipboard = JSON.parse(JSON.stringify(it)); pasteN = 0; toast("Copied"); }
+function pasteClip(){
+  if(!clipboard) return;
+  pasteN++;
+  const c = {...JSON.parse(JSON.stringify(clipboard)), id:nextId++,
+             x:(clipboard.x||0) + PASTE_OFFSET*pasteN, y:(clipboard.y||0) + PASTE_OFFSET*pasteN};
+  doc.items.push(c); selId = c.id; commit(); render();
+}
+
+// More zoom helpers
+function zoom100(){ const r = ws.getBoundingClientRect(); zoomAt(r.left+r.width/2, r.top+r.height/2, 1); }
+
+// Editing options (grid, guides, autosave)
+function syncEditingUI(){
+  $("sGuides").checked = settings.snapGuides; $("sGrid").checked = settings.showGrid;
+  $("sSnapGrid").checked = settings.snapGrid; $("sAutosave").checked = settings.autosave;
+  $("bGrid").classList.toggle("on", settings.showGrid);
+  $("bSnap").classList.toggle("on", settings.snapGuides);
+  updateGridVisibility();
+}
+function setOpt(key, val){
+  settings[key] = val; saveSettings(); syncEditingUI();
+  if(key === "autosave" && val) scheduleAutosave();
+  if(key === "autosave" && !val) $("saveState").textContent = "";
+}
+[["sGuides","snapGuides"],["sGrid","showGrid"],["sSnapGrid","snapGrid"],["sAutosave","autosave"]]
+  .forEach(([id,key]) => { $(id).onchange = () => setOpt(key, $(id).checked); });
+$("bGrid").onclick = () => setOpt("showGrid", !settings.showGrid);
+$("bSnap").onclick = () => setOpt("snapGuides", !settings.snapGuides);
+
+$("bNew").onclick = () => {
+  if(doc.items.length && !confirm("Start a new blank page? (Undo brings it back.)")) return;
+  doc = {w:PAGE_W, h:PAGE_H, bg:PAGE_BG, items:[]}; selId = null; commit(); render(); fit();
+};
+
+function moveZ(dir){
+  const it = sel(); if(!it) return;
+  const idx = doc.items.indexOf(it);
+  const newIdx = idx + dir;
+  if(newIdx < 0 || newIdx >= doc.items.length) return;
+  doc.items.splice(idx, 1);
+  doc.items.splice(newIdx, 0, it);
+  commit(); render();
+}
+$("nUp").onclick = () => moveZ(1);
+$("nDown").onclick = () => moveZ(-1);
+
+$("pNone").onclick = () => { const it=sel(); if(it){ it.bg=""; commit(); render(); } };
+$("cNone").onclick = () => { const it=sel(); if(it){ it.bg=""; commit(); render(); } };
+
+function bringFront(){ const i=sel(); if(i){ doc.items=doc.items.filter(x=>x!==i); doc.items.push(i); commit(); render(); } }
+function sendBack(){ const i=sel(); if(i){ doc.items=doc.items.filter(x=>x!==i); doc.items.unshift(i); commit(); render(); } }
+$("bFront").onclick = bringFront; $("bBack").onclick = sendBack;
+$("cFront").onclick = bringFront; $("cBack").onclick = sendBack;
+
+function dup(){ const i=sel(); if(!i) return; const c={...i,id:nextId++,x:i.x+20,y:i.y+20}; doc.items.push(c); selId=c.id; commit(); render(); }
+function del(){ if(!sel()) return; doc.items=doc.items.filter(x=>x.id!==selId); selId=null; commit(); render(); }
+$("bDup").onclick = dup; $("bDel").onclick = del;
+$("bDupC").onclick = dup; $("bDelC").onclick = del;
+
+$("pgW").onchange = () => { doc.w = clamp(+$("pgW").value||PAGE_W,200,3000); commit(); render(); };
+$("pgH").onchange = () => { doc.h = clamp(+$("pgH").value||PAGE_H,200,6000); commit(); render(); };
+$("pgBg").oninput = () => { doc.bg = $("pgBg").value; render(); }; $("pgBg").onchange = commit;
+$("bUndo").onclick = undo; $("bRedo").onclick = redo;
+$("bUndoC").onclick = undo; $("bRedoC").onclick = redo;
+$("bPrev").onclick = () => { preview = !preview; if(preview) selId = null; render(); };
+document.querySelectorAll("#tools button, #toolsCompact button").forEach(b => {
+  b.onclick = () => { tool = b.dataset.tool; syncBar(); };
+});
+
+// ---- Context menu ----
+const ctxEl = $("ctx");
+function hideCtx(){ ctxEl.classList.remove("open"); ctxEl.innerHTML = ""; }
+function showCtx(x, y, items){
+  ctxEl.innerHTML = "";
+  for(const it of items){
+    if(it === "sep"){ const s = document.createElement("div"); s.className = "ctx-sep"; ctxEl.appendChild(s); continue; }
+    const row = document.createElement("div");
+    row.className = "ctx-item" + (it.disabled ? " disabled" : "") + (it.danger ? " danger" : "");
+    row.innerHTML = `<span>${it.label}</span>` + (it.key ? `<span class="k">${it.key}</span>` : "");
+    if(!it.disabled && it.action) row.onclick = (e) => { e.stopPropagation(); hideCtx(); it.action(); };
+    ctxEl.appendChild(row);
+  }
+  ctxEl.classList.add("open");
+  const r = ctxEl.getBoundingClientRect();
+  ctxEl.style.left = Math.max(4, Math.min(x, innerWidth - r.width - 6)) + "px";
+  ctxEl.style.top  = Math.max(4, Math.min(y, innerHeight - r.height - 6)) + "px";
+}
+function ctxForItem(it){
+  const isFront = doc.items[doc.items.length-1] === it;
+  const isBack  = doc.items[0] === it;
+  const sc = settings.shortcuts;
+  return [
+    { label: "Duplicate", key: fmtShortcut(sc.duplicate), action: () => { selId = it.id; dup(); } },
+    { label: "Copy", key: fmtShortcut(sc.copy), action: () => copySel(it) },
+    "sep",
+    { label: "Bring to Front", disabled: isFront, action: () => { doc.items = doc.items.filter(x => x !== it); doc.items.push(it); selId = it.id; commit(); render(); }},
+    { label: "Send to Back", disabled: isBack, action: () => { doc.items = doc.items.filter(x => x !== it); doc.items.unshift(it); selId = it.id; commit(); render(); }},
+    { label: "Move Up", action: () => { selId = it.id; moveZ(1); } },
+    { label: "Move Down", action: () => { selId = it.id; moveZ(-1); } },
+    "sep",
+    { label: "Center Horizontally", action: () => { selId = it.id; alignSel("center"); } },
+    { label: "Center Vertically", action: () => { selId = it.id; alignSel("middle"); } },
+    "sep",
+    { label: it.visible === false ? "Show" : "Hide", key: fmtShortcut(sc.hide), action: () => { selId = it.id; toggleHide(it); }},
+    { label: it.locked ? "Unlock" : "Lock", key: fmtShortcut(sc.lock), action: () => { selId = it.id; toggleLock(it); }},
+    "sep",
+    { label: "Delete", key: fmtShortcut(sc.delete), danger: true, action: () => { selId = it.id; del(); } },
+  ];
+}
+function ctxForEmpty(pagePt){
+  const sc = settings.shortcuts;
+  return [
+    { label: "Paste", key: fmtShortcut(sc.paste), disabled: !clipboard, action: () => {
+        if(!clipboard) return;
+        const c = {...JSON.parse(JSON.stringify(clipboard)), id: nextId++,
+                   x: Math.round(pagePt.x - (clipboard.w||100)/2),
+                   y: Math.round(pagePt.y - (clipboard.h||40)/2)};
+        doc.items.push(c); selId = c.id; commit(); render();
+      }},
+    "sep",
+    { label: "Add Button", action: () => addItem("button", pagePt) },
+    { label: "Add Text", action: () => addItem("text", pagePt) },
+    { label: "Add Panel", action: () => addItem("panel", pagePt) },
+    { label: "Add Image", action: () => addItem("image", pagePt) },
+  ];
+}
+ws.addEventListener("contextmenu", e => {
+  e.preventDefault();
+  if(preview) return;
+  hideCtx();
+  const node = e.target.closest(".item");
+  if(node){
+    const id = +node.dataset.id;
+    const it = doc.items.find(i => i.id === id);
+    if(!it) return;
+    selId = id; render();
+    showCtx(e.clientX, e.clientY, ctxForItem(it));
+  } else {
+    showCtx(e.clientX, e.clientY, ctxForEmpty(toPage(e.clientX, e.clientY)));
+  }
+});
+$("nodeList").addEventListener("contextmenu", e => {
+  e.preventDefault();
+  if(preview) return;
+  const row = e.target.closest(".node-item");
+  if(!row) return;
+  const id = +row.dataset.id;
+  const it = doc.items.find(i => i.id === id);
+  if(!it) return;
+  selId = id; render();
+  showCtx(e.clientX, e.clientY, ctxForItem(it));
+});
+addEventListener("pointerdown", e => {
+  if(ctxEl.classList.contains("open") && !ctxEl.contains(e.target)) hideCtx();
+}, true);
+ws.addEventListener("wheel", hideCtx, {passive:true});
+
+// ---- Settings UI ----
+function openSettings(){
+  hideCtx();
+  buildShortcutTable();
+  document.querySelectorAll(".layout-card").forEach(c => c.classList.toggle("active", c.dataset.layout === settings.layout));
+  syncEditingUI();
+  syncDisplayUI();
+  buildThemeGrid();
+  fillAbout();
+  showSettingsPage(settingsPage);
+  $("settingsOverlay").classList.add("open");
+}
+function closeSettings(){
+  $("settingsOverlay").classList.remove("open");
+  listeningKey = null;
+}
+$("bSettings").onclick = openSettings;
+$("bSettingsClose").onclick = closeSettings;
+$("bSettingsDone").onclick = closeSettings;
+$("settingsOverlay").addEventListener("click", e => { if(e.target === $("settingsOverlay")) closeSettings(); });
+
+document.querySelectorAll(".layout-card").forEach(card => {
+  card.onclick = () => {
+    settings.layout = card.dataset.layout;
+    saveSettings();
+    applyLayout();
+    syncBar();
+  };
+});
+
+let listeningKey = null; // action id currently being rebound
+
+function buildShortcutTable(){
+  const tbody = $("scTable").querySelector("tbody");
+  tbody.innerHTML = "";
+  const order = ["undo","redo","redoAlt","duplicate","copy","cut","paste","save","export","delete",
+                 "lock","hide","grid","snap","zoomFit","zoom100","zoomIn","zoomOut","preview",
+                 "toolSelect","toolButton","toolText","toolPanel","toolImage","settings"];
+  for(const id of order){
+    const sc = settings.shortcuts[id];
+    if(!sc) continue;
+    const tr = document.createElement("tr");
+    const keySpan = document.createElement("span");
+    keySpan.className = "sc-key" + (listeningKey === id ? " listening" : "");
+    keySpan.textContent = fmtShortcut(sc);
+    keySpan.title = "Click to rebind";
+    keySpan.onclick = () => {
+      listeningKey = id;
+      buildShortcutTable();
+    };
+    tr.innerHTML = `<td>${sc.label}</td><td></td>`;
+    tr.cells[1].appendChild(keySpan);
+    tbody.appendChild(tr);
+  }
+}
+
+$("bResetDefaults").onclick = () => {
+  if(!confirm("Reset layout and all shortcuts to defaults?")) return;
+  settings = JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+  saveSettings();
+  applyTheme();
+  buildThemeGrid();
+  applyUiScale();
+  applyLayout();
+  buildShortcutTable();
+  syncEditingUI();
+  syncDisplayUI();
+  syncBar();
+};
+
+// ---- Saving & Exporting ----
+async function saveFile(name, data, type){
+  try{
+    if(window.claude && claude.use){
+      const dl = await claude.use("downloads");
+      if(dl){ await dl.save({filename:name, data}); return; }
+    }
+  }catch(err){ if(err && err.code==="declined") return; }
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([data],{type})); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+
+function buildHTML(){
+  const e = s => String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  const usedFonts = new Set();
+  const parts = doc.items.map(it=>{
+    if(it.visible === false) return "";
+    if(fontStyle(it) && it.font) usedFonts.add(it.font);
+    const isGlass = (it.style === "glass" || (!it.style && it.type === "panel"));
+    const alpha = (it.opacity !== undefined ? it.opacity : (isGlass ? 30 : 100)) / 100;
+    const bgStyle = it.bg ? (isGlass ? hexToRgba(it.bg, alpha) : it.bg) : "transparent";
+    const glassCss = isGlass ? "backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.25);" : "";
+    const sc = (it.scale !== undefined && it.scale !== 1) ? `transform:scale(${it.scale});transform-origin:0 0;` : "";
+    const st = `position:absolute;box-sizing:border-box;overflow:hidden;left:${it.x}px;top:${it.y}px;width:${it.w}px;height:${it.h}px;` +
+      `background:${bgStyle};color:${it.color};font-size:${it.size}px;border-radius:${it.radius}px;line-height:1.3;${glassCss}${sc}${fontStyle(it)}`;
+    const dataAnim = `data-ev="${e(it.animEv||'none')}" data-anim="${e(it.animType||'none')}" data-dur="${it.animDur||0.5}"`;
+    if(it.type==="image") return `<img src="${e(it.src)}" alt="" style="${st}object-fit:cover" ${dataAnim}>`;
+    if(it.type==="button"){
+      const u = fixLink(it.link);
+      return `<a ${u?`href="${e(u)}" target="_blank" rel="noopener"`:""} style="${st}display:flex;align-items:center;justify-content:center;text-align:center;font-weight:600;text-decoration:none;cursor:pointer" ${dataAnim}>${e(it.text)}</a>`;
+    }
+    return `<div style="${st}${it.type==="text"?"white-space:pre-wrap":""}" ${dataAnim}>${e(it.text)}</div>`;
+  }).filter(Boolean).join("\n");
+
+  const animCss = `
+    @keyframes anim-fade { 0% { opacity:0; } 100% { opacity:1; } }
+    @keyframes anim-slide { 0% { transform:translateY(30px); opacity:0; } 100% { transform:translateY(0); opacity:1; } }
+    @keyframes anim-zoom { 0% { transform:scale(0.7); opacity:0; } 100% { transform:scale(1); opacity:1; } }
+    @keyframes anim-bounce { 0%, 100% { transform:translateY(0); } 50% { transform:translateY(-18px); } }
+    @keyframes anim-pulse { 0%, 100% { transform:scale(1); } 50% { transform:scale(1.08); } }
+    @keyframes anim-rotate { 0% { transform:rotate(0deg); } 100% { transform:rotate(360deg); } }
+  `;
+
+  return `<!DOCTYPE html>\n<html lang="en"><head><meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n` +
+    fontLinkTags(usedFonts) + `<title>${APP_NAME} page</title>\n<style>body{margin:0;font-family:system-ui,sans-serif;background:${e(doc.bg)}}\n${animCss}</style></head>\n<body>\n` +
+    `<div id="p" style="position:relative;width:${doc.w}px;height:${doc.h}px;background:${e(doc.bg)};transform-origin:0 0">\n${parts}\n</div>\n` +
+    `<script>
+      function f(){var p=document.getElementById("p"),s=Math.min(1,innerWidth/${doc.w});p.style.transform="scale("+s+")";` +
+      `p.style.margin=s<1?"0":"0 auto";document.body.style.height=(${doc.h}*s)+"px"}f();addEventListener("resize",f);
+      function play(el){ var t=el.dataset.anim, d=el.dataset.dur; if(!t||t==='none')return; el.style.animation='none'; void el.offsetWidth; el.style.animation='anim-'+t+' '+(d||0.5)+'s ease forwards'; }
+      document.querySelectorAll('#p [data-anim]').forEach(function(el){
+        var ev=el.dataset.ev;
+        if(ev==='load') play(el);
+        if(ev==='hover') el.onmouseenter=function(){ play(el); };
+        if(ev==='click') el.onclick=function(){ play(el); };
+      });
+    <\/script>\n</body></html>`;
+}
+
+function saveProject(){ saveFile(PROJECT_FILE, JSON.stringify(doc), "application/json"); toast("Project saved"); }
+$("bExport").onclick = () => { saveFile(EXPORT_FILE, buildHTML(), "text/html"); toast("HTML exported"); };
+$("bSave").onclick = saveProject;
+$("bOpen").onclick = () => $("fJson").click();
+$("fJson").onchange = e => {
+  const f = e.target.files[0]; e.target.value = ""; if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try{
+      const d = JSON.parse(r.result);
+      if(!Array.isArray(d.items)) throw 0;
+      d.items.forEach(it => {
+        if(it.visible === undefined) it.visible = true;
+        if(it.scale === undefined) it.scale = 1;
+      });
+      doc = d; nextId = Math.max(0,...doc.items.map(i=>i.id))+1; selId = null; commit(); render(); fit();
+    }catch(_){ alert("That file is not a valid project."); }
+  };
+  r.readAsText(f);
+};
+
+// ---- Keyboard shortcuts ----
+addEventListener("keydown", e => {
+  // Rebinding mode
+  if(listeningKey){
+    e.preventDefault();
+    if(e.key === "Escape"){ listeningKey = null; buildShortcutTable(); return; }
+    // ignore pure modifier keys
+    if(["Control","Meta","Alt","Shift"].includes(e.key)) return;
+    const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    settings.shortcuts[listeningKey] = {
+      ...settings.shortcuts[listeningKey],
+      key,
+      mod: e.ctrlKey || e.metaKey,
+      shift: e.shiftKey
+    };
+    saveSettings();
+    listeningKey = null;
+    buildShortcutTable();
+    return;
+  }
+
+  if($("settingsOverlay").classList.contains("open")){
+    if(e.key === "Escape") closeSettings();
+    return;
+  }
+
+  const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+  if(e.code==="Space" && !typing){ spaceDown = true; ws.style.cursor="grab"; e.preventDefault(); }
+  if(typing){
+    // Escape / Enter leave the text box; Ctrl+S still saves
+    if(e.key === "Escape" || (e.key === "Enter" && document.activeElement.type === "text")) document.activeElement.blur();
+    else if(matchShortcut(e, settings.shortcuts.save)){ e.preventDefault(); saveProject(); }
+    return;
+  }
+
+  const sc = settings.shortcuts;
+  if(matchShortcut(e, sc.undo) && !e.shiftKey){ e.preventDefault(); undo(); }
+  else if(matchShortcut(e, sc.redo) || matchShortcut(e, sc.redoAlt)){ e.preventDefault(); redo(); }
+  else if(matchShortcut(e, sc.duplicate)){ e.preventDefault(); dup(); }
+  else if(matchShortcut(e, sc.copy)){ e.preventDefault(); copySel(); }
+  else if(matchShortcut(e, sc.cut)){ e.preventDefault(); if(sel()){ copySel(); del(); } }
+  else if(matchShortcut(e, sc.paste)){
+    // With nothing copied inside the editor, let the browser's paste event add a clipboard picture
+    if(!clipboard) return;
+    e.preventDefault(); pasteClip();
+  }
+  else if(matchShortcut(e, sc.save)){ e.preventDefault(); saveProject(); }
+  else if(matchShortcut(e, sc.export)){ e.preventDefault(); $("bExport").click(); }
+  else if(matchShortcut(e, sc.delete)){ e.preventDefault(); del(); }
+  else if(matchShortcut(e, sc.settings)){ e.preventDefault(); openSettings(); }
+  else if(matchShortcut(e, sc.toolSelect)){ tool="select"; syncBar(); }
+  else if(matchShortcut(e, sc.toolButton)){ tool="button"; syncBar(); }
+  else if(matchShortcut(e, sc.toolText)){ tool="text"; syncBar(); }
+  else if(matchShortcut(e, sc.toolPanel)){ tool="panel"; syncBar(); }
+  else if(matchShortcut(e, sc.toolImage)){ tool="image"; syncBar(); }
+  else if(matchShortcut(e, sc.lock)){ toggleLock(); }
+  else if(matchShortcut(e, sc.hide)){ toggleHide(); }
+  else if(matchShortcut(e, sc.grid)){ setOpt("showGrid", !settings.showGrid); }
+  else if(matchShortcut(e, sc.snap)){ setOpt("snapGuides", !settings.snapGuides); toast(settings.snapGuides ? "Smart guides on" : "Smart guides off"); }
+  else if(matchShortcut(e, sc.zoomFit)){ fit(); }
+  else if(matchShortcut(e, sc.zoom100)){ zoom100(); }
+  else if(matchShortcut(e, sc.zoomIn) || (e.key === "+" && !(e.ctrlKey||e.metaKey))){ zoomCenter(1.25); }
+  else if(matchShortcut(e, sc.zoomOut)){ zoomCenter(.8); }
+  else if(matchShortcut(e, sc.preview)){ e.preventDefault(); $("bPrev").click(); }
+  else if(e.key.startsWith("Arrow") && sel() && !sel().locked){
+    e.preventDefault(); const s=e.shiftKey?10:1, it=sel();
+    if(e.key==="ArrowLeft") it.x-=s; if(e.key==="ArrowRight") it.x+=s;
+    if(e.key==="ArrowUp") it.y-=s; if(e.key==="ArrowDown") it.y+=s;
+    render(); clearTimeout(window._nt); window._nt = setTimeout(commit,400);
+  }
+  if(e.key === "Escape"){                       // Escape: close menu, else leave preview, else deselect
+    if(ctxEl.classList.contains("open")) hideCtx();
+    else if(preview) $("bPrev").click();
+    else if(appEl.classList.contains("sheet-open")) setSheet(false);
+    else if(selId !== null){ selId = null; render(); }
+  }
+});
+addEventListener("keyup", e => { if(e.code==="Space"){ spaceDown=false; ws.style.cursor="default"; } });
+
+// ---- Fonts ----
+const fontById = {}; FONTS.forEach(f => fontById[f.id] = f);
+function fontCss(id){ return (fontById[id] || fontById.default).css; }
+// Only text and buttons have a font
+function fontStyle(it){ return (it.type === "text" || it.type === "button") ? "font-family:" + fontCss(it.font) + ";" : ""; }
+function googleParam(f){ return "family=" + f.name.replace(/ /g, "+") + (f.w ? ":wght@" + f.w : ""); }
+function fontLinkUrl(ids){
+  const list = [...ids].map(i => fontById[i]).filter(f => f && f.g);
+  return list.length ? "https://fonts.googleapis.com/css2?" + list.map(googleParam).join("&") + "&display=swap" : "";
+}
+// Link tags for the exported page (only the Google fonts actually used)
+function fontLinkTags(ids){
+  const list = [...ids].map(i => fontById[i]).filter(f => f && f.g);
+  if(!list.length) return "";
+  return '<link rel="preconnect" href="https://fonts.googleapis.com">\n' +
+    list.map(f => '<link rel="stylesheet" href="' + fontLinkUrl([f.id]) + '">\n').join("");   // one link per font
+}
+// In the editor a Google font is downloaded only the first time something uses it
+const loadedFonts = {};
+function loadFont(id){
+  const f = fontById[id];
+  if(!f || !f.g || loadedFonts[id]) return;
+  loadedFonts[id] = 1;
+  const l = document.createElement("link"); l.rel = "stylesheet"; l.href = fontLinkUrl([id]);
+  document.head.appendChild(l);
+}
+function buildFontSelects(){
+  for(const sel of [$("pFont"), $("cFont")]){
+    sel.innerHTML = "";
+    for(const gid of Object.keys(FONT_GROUPS)){
+      const og = document.createElement("optgroup"); og.label = FONT_GROUPS[gid];
+      for(const f of FONTS.filter(f => f.group === gid)){
+        const o = document.createElement("option"); o.value = f.id; o.textContent = f.name;
+        if(!f.g) o.style.fontFamily = f.css;          // preview system fonts right in the list
+        og.appendChild(o);
+      }
+      sel.appendChild(og);
+    }
+  }
+}
+
+// ---- Themes ----
+function applyTheme(){
+  const id = THEMES.some(t => t.id === settings.theme) ? settings.theme : "auto";
+  document.documentElement.setAttribute("data-theme", id);
+  const meta = document.querySelector('meta[name="theme-color"]');      // colors the Android browser bar
+  if(meta) meta.setAttribute("content", getComputedStyle(document.documentElement).getPropertyValue("--panel").trim() || "#ffffff");
+}
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);   // "Auto" follows the system
+function previewMarkup(){
+  return '<i class="tp-tools"></i><i class="tp-ws"><i class="tp-item"></i><i class="tp-btn"></i></i><i class="tp-panel"></i>';
+}
+function buildThemeGrid(){                  // one small preview card per theme
+  const grid = $("themeGrid"); grid.innerHTML = "";
+  for(const t of THEMES){
+    const card = document.createElement("div");
+    card.className = "theme-card" + (t.id === settings.theme ? " active" : "");
+    card.dataset.t = t.id; card.title = t.name;
+    const prev = document.createElement("div"); prev.className = "theme-prev";
+    if(t.id === "auto") prev.innerHTML = '<div class="half" data-theme="light">' + previewMarkup() + '</div><div class="half" data-theme="dark">' + previewMarkup() + '</div>';
+    else { prev.dataset.theme = t.id; prev.innerHTML = previewMarkup(); }
+    const name = document.createElement("span"); name.textContent = t.name;
+    card.append(prev, name);
+    card.onclick = () => setTheme(t.id);
+    grid.appendChild(card);
+  }
+}
+function setTheme(id){
+  settings.theme = id; saveSettings(); applyTheme();
+  document.querySelectorAll(".theme-card").forEach(c => c.classList.toggle("active", c.dataset.t === id));
+}
+
+// ---- Display settings: interface size + side panel position ----
+function syncDisplayUI(){
+  $("uiScale").value = settings.uiScale;
+  $("uiScaleTxt").textContent = settings.uiScale + "%";
+  document.querySelectorAll(".side-card").forEach(c => c.classList.toggle("active", c.dataset.side === settings.panelSide));
+}
+function setUiScale(v){
+  settings.uiScale = clamp(Math.round(v/5)*5, 70, 200);
+  saveSettings(); applyUiScale(); syncDisplayUI(); fit();
+}
+$("uiScale").oninput = () => { $("uiScaleTxt").textContent = $("uiScale").value + "%"; };   // label follows the slider, size applies on release
+$("uiScale").onchange = () => setUiScale(+$("uiScale").value);
+$("uiMinus").onclick = () => setUiScale(settings.uiScale - 10);
+$("uiPlus").onclick  = () => setUiScale(settings.uiScale + 10);
+$("uiReset").onclick = () => setUiScale(100);
+function setPanelSide(side){
+  settings.panelSide = side; saveSettings(); applyLayout(); syncDisplayUI();
+  toast("Panel on the " + side);
+}
+document.querySelectorAll(".side-card").forEach(c => c.onclick = () => setPanelSide(c.dataset.side));
+$("panelFlip").onclick = () => setPanelSide(settings.panelSide === "left" ? "right" : "left");
+
+// Drag the "Scene" header to the left or right half of the screen to move the panel there
+function panelMovable(){ return !appEl.classList.contains("sheet-bottom") && settings.layout !== "dock"; }
+let panelDrag = null;
+const sceneHeader = $("sceneHeader"), dropHint = $("dropHint");
+sceneHeader.addEventListener("pointerdown", e => {
+  if(!panelMovable() || e.target.closest("button")) return;
+  panelDrag = {sx:e.clientX, moved:false, side:settings.panelSide};
+  sceneHeader.setPointerCapture(e.pointerId);
+});
+sceneHeader.addEventListener("pointermove", e => {
+  if(!panelDrag) return;
+  if(!panelDrag.moved && Math.abs(e.clientX - panelDrag.sx) < 8) return;   // ignore tiny moves
+  panelDrag.moved = true;
+  panelDrag.side = e.clientX < innerWidth/2 ? "left" : "right";
+  dropHint.style.display = "block";
+  dropHint.style.width = $("nodes").getBoundingClientRect().width + "px";
+  dropHint.style.left  = panelDrag.side === "left"  ? "0" : "auto";
+  dropHint.style.right = panelDrag.side === "right" ? "0" : "auto";
+});
+function endPanelDrag(){
+  if(!panelDrag) return;
+  dropHint.style.display = "none";
+  const d = panelDrag; panelDrag = null;
+  if(d.moved && d.side !== settings.panelSide) setPanelSide(d.side);
+}
+sceneHeader.addEventListener("pointerup", endPanelDrag);
+sceneHeader.addEventListener("pointercancel", endPanelDrag);
+
+// Phone layout: the panel is a sheet that slides up from the bottom
+function setSheet(open){
+  const on = !!open && (appEl.classList.contains("sheet-bottom") || appEl.classList.contains("sheet-side"));
+  appEl.classList.toggle("sheet-open", on);
+  $("bPanel").classList.toggle("on", on);
+}
+$("bPanel").onclick = () => setSheet(!appEl.classList.contains("sheet-open"));
+$("sheetClose").onclick = () => setSheet(false);
+// A side drawer closes when you click or tap the page
+ws.addEventListener("pointerdown", () => { if(appEl.classList.contains("sheet-side")) setSheet(false); });
+
+// ---- Settings pages (General / Themes / Layout / Shortcuts / About) ----
+let settingsPage = "general";
+function showSettingsPage(id){
+  settingsPage = id; listeningKey = null;
+  document.querySelectorAll("#settingsBody [data-page]").forEach(p => p.classList.toggle("active", p.dataset.page === id));
+  document.querySelectorAll("#settingsTabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === id));
+  if(id === "shortcuts") buildShortcutTable();
+  $("settingsBody").scrollTop = 0;
+}
+document.querySelectorAll("#settingsTabs button").forEach(b => b.onclick = () => showSettingsPage(b.dataset.tab));
+function fillAbout(){                       // the texts come from the CUSTOMIZE block at the top
+  $("aboutLogo").textContent = APP_NAME.charAt(0);
+  $("aboutName").textContent = APP_NAME;
+  $("aboutVersion").textContent = "Version " + APP_VERSION + " · " + APP_VERSION_NAME;
+  $("aboutVer").textContent = APP_VERSION;
+  $("aboutVerName").textContent = APP_VERSION_NAME;
+  $("aboutAuthor").textContent = AUTHOR_NAME;
+  $("aboutDiscord").textContent = AUTHOR_DISCORD;
+}
+$("bResetShortcuts").onclick = () => {
+  if(!confirm("Reset all keyboard shortcuts to their defaults?")) return;
+  settings.shortcuts = JSON.parse(JSON.stringify(DEFAULT_SHORTCUTS));
+  saveSettings(); listeningKey = null; buildShortcutTable(); toast("Shortcuts reset");
+};
+
+// ---- Start ----
+// Starter page shown the first time (or when autosave is off / empty)
+function loadStarter(){
+  doc = {w:PAGE_W, h:PAGE_H, bg:PAGE_BG, items:[]}; nextId = 1; selId = null;
+  doc.items.push(
+    {id:nextId++, type:"panel",  ...DEFAULTS.panel,  x:80,  y:80,  w:740, h:240, bg:"#1f2a44", style:"glass", opacity:75},
+    {id:nextId++, type:"text",   ...DEFAULTS.text,   x:120, y:120, w:660, h:60, text:"Welcome to my page", color:"#ffffff", size:40, animEv:"load", animType:"fade", animDur:0.8},
+    {id:nextId++, type:"button", ...DEFAULTS.button, x:120, y:230, text:"Hover over me!", link:"https://example.com", animEv:"hover", animType:"pulse", animDur:0.4}
+  );
+}
+buildFontSelects(); applyTheme(); applyUiScale(); syncDisplayUI();
+applyLayout();
+if(restoreAutosave()) toast("Restored your last session");
+else loadStarter();
+history = []; hPos = -1;
+commit(); render(); fit(); syncEditingUI();
+</script>
+</body>
+</html>
